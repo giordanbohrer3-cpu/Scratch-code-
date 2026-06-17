@@ -1,0 +1,1 @@
+{"name":"vmtest","version":"1.0.0","private":true,"dependencies":{"canvas":"^3.2.3","gl":"^8.1.6","jsdom":"^29.1.1","scratch-render":"^2.2.84","scratch-vm":"^5.0.300"}}

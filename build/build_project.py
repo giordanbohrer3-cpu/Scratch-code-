@@ -8,7 +8,7 @@ Plataforma estilo Fogo & Água / Mario:
   - coletáveis, portas no chão, animações de coleta / porta / fim de fase
 """
 from sb3lib import *
-import art_backdrops, art_intro, art_floor, art_items, art_chars, art_doors, art_ui
+import art_backdrops, art_intro, art_floor, art_items, art_chars, art_doors, art_ui, art_fx
 from phases import (PHASES, GROUND_Y, SPAWN_THEO, SPAWN_LIA, DOOR_THEO, DOOR_LIA,
                     ITEM_POS, WALK, JUMP, GRAV, VY_MIN, PLAYER_XMIN, PLAYER_XMAX,
                     OBST_A, OBST_B)
@@ -78,7 +78,7 @@ def build():
     chao = Target("Chao")
     for name, svg in art_floor.ground_all():
         chao.add_costume(name, svg, 240, 180)
-    chao.x, chao.y, chao.layer = 0, 0, 1
+    chao.x, chao.y, chao.layer = 0, 0, 3
     chao.script(
         on_flag(), goto_xy(0, 0), set_size(100),
         forever([
@@ -95,7 +95,7 @@ def build():
     obst = Target("Obstaculo")
     for name, svg in art_floor.obstacle_all():
         obst.add_costume(name, svg, 240, 180)
-    obst.x, obst.y, obst.layer = 0, 0, 2
+    obst.x, obst.y, obst.layer = 0, 0, 4
     obst.script(
         on_flag(), goto_xy(0, 0), set_size(100),
         forever([
@@ -124,8 +124,8 @@ def build():
             ]),
         )
         return d
-    P.add_sprite(make_door("Porta Theo", art_doors.porta_theo(), DOOR_THEO, 3))
-    P.add_sprite(make_door("Porta Lia", art_doors.porta_lia(), DOOR_LIA, 4))
+    P.add_sprite(make_door("Porta Theo", art_doors.porta_theo(), DOOR_THEO, 5))
+    P.add_sprite(make_door("Porta Lia", art_doors.porta_lia(), DOOR_LIA, 6))
 
     # =====================================================================
     # OBJETOS COLETÁVEIS (4 sprites, 5 costumes cada)
@@ -135,7 +135,7 @@ def build():
         for name, svg in art_items.items_for_slot(slot):
             ob.add_costume(name, svg, 24, 24)
         ix, iy = ITEM_POS[slot - 1]
-        ob.x, ob.y, ob.layer = ix, iy, 4 + slot
+        ob.x, ob.y, ob.layer = ix, iy, 6 + slot
         ob.visible = False
         itemvar = f"item{slot}"
         # distância² do item até cada jogador (usa "[x] de [sprite]")
@@ -166,7 +166,8 @@ def build():
     # =====================================================================
     # JOGADORES (Theo e Lia) - motor do platformer
     # =====================================================================
-    def make_player(name, costumes, spawn, door, ok_var, vy, no, passo, dx, pf, sf, layer):
+    def make_player(name, costumes, spawn, door, ok_var, vy, no, passo, dx, pf, sf,
+                    left_key, right_key, up_key, layer):
         c_idle, c_walk, c_jump = costumes
         sp = Target(name)
         for cn, svg in (art_chars.theo_costumes() if name == "Theo" else art_chars.lia_costumes()):
@@ -177,9 +178,12 @@ def build():
         sp.rotation_style = "left-right"
         sp.layer = layer
 
-        right = or_(key_pressed("right arrow"), key_pressed("d"))
-        left = or_(key_pressed("left arrow"), key_pressed("a"))
-        jumpk = or_(key_pressed("space"), or_(key_pressed("up arrow"), key_pressed("w")))
+        # Controles INDIVIDUAIS: Theo = WASD, Lia = setas.
+        # Pulo: ESPAÇO faz os dois pularem juntos (cada um também pula na sua
+        # tecla de cima -> W / seta para cima).
+        right = key_pressed(right_key)
+        left = key_pressed(left_key)
+        jumpk = or_(key_pressed("space"), key_pressed(up_key))
         feet = sub(ypos(), FOOT)
 
         # motor principal (colisão por matemática contra chão + 2 obstáculos)
@@ -259,18 +263,20 @@ def build():
     P.add_sprite(make_player(
         "Theo", ("Theo parado", "Theo andar", "Theo pular"),
         SPAWN_THEO, "Porta Theo", "Theo_ok",
-        "vy_theo", "no_theo", "passo_theo", "dx_theo", "pf_theo", "sf_theo", 9))
+        "vy_theo", "no_theo", "passo_theo", "dx_theo", "pf_theo", "sf_theo",
+        "a", "d", "w", 11))                       # Theo = WASD
     P.add_sprite(make_player(
         "Lia", ("Lia parada", "Lia andar", "Lia pular"),
         SPAWN_LIA, "Porta Lia", "Lia_ok",
-        "vy_lia", "no_lia", "passo_lia", "dx_lia", "pf_lia", "sf_lia", 10))
+        "vy_lia", "no_lia", "passo_lia", "dx_lia", "pf_lia", "sf_lia",
+        "left arrow", "right arrow", "up arrow", 12))   # Lia = setas
 
     # =====================================================================
     # BOTÃO COMEÇAR
     # =====================================================================
     btn = Target("Botao")
     btn.add_costume("Comecar", art_ui.start_button(), art_ui.BTN_W / 2, art_ui.BTN_H / 2)
-    btn.x, btn.y, btn.layer = 0, -8, 11
+    btn.x, btn.y, btn.layer = 0, -8, 14
     btn.script(
         on_flag(), goto_xy(0, -8), set_size(100), goto_front(),
         forever([
@@ -291,7 +297,7 @@ def build():
     selo = Target("Selo")
     for name, svg in art_ui.selo_all():
         selo.add_costume(name, svg, art_ui.SEL / 2, art_ui.SEL / 2)
-    selo.x, selo.y, selo.layer = 150, -60, 12
+    selo.x, selo.y, selo.layer = 150, -60, 15
     selo.visible = False
     selo.script(
         on_flag(), hide(), set_size(100), goto_xy(150, -60), point_dir(90),
@@ -310,7 +316,7 @@ def build():
     cont = Target("Contagem")
     for name, svg in art_ui.count_all():
         cont.add_costume(name, svg, art_ui.CW / 2, art_ui.CH / 2)
-    cont.x, cont.y, cont.layer = 0, 0, 13
+    cont.x, cont.y, cont.layer = 0, 0, 16
     cont.visible = False
     cont.script(
         on_flag(), hide(), set_size(100), goto_xy(0, 0),
@@ -331,7 +337,7 @@ def build():
     # =====================================================================
     aviso = Target("Aviso")
     aviso.add_costume("Fase Completa", art_ui.banner_costume(), art_ui.BW / 2, art_ui.BH / 2)
-    aviso.x, aviso.y, aviso.layer = 0, 40, 14
+    aviso.x, aviso.y, aviso.layer = 0, 40, 17
     aviso.visible = False
     aviso.script(on_flag(), hide())
     aviso.script(
@@ -352,7 +358,7 @@ def build():
     conf = Target("Confete")
     for name, svg in art_ui.confetti_all():
         conf.add_costume(name, svg, 6, 8)
-    conf.x, conf.y, conf.layer = 0, 200, 15
+    conf.x, conf.y, conf.layer = 0, 200, 18
     conf.visible = False
     conf.script(on_flag(), hide())
     conf.script(
@@ -373,11 +379,84 @@ def build():
     P.add_sprite(conf)
 
     # =====================================================================
+    # ASTRO - elemento celeste animado no fundo (muda por era)
+    # =====================================================================
+    from phases import ASTRO_POS
+    astro = Target("Astro")
+    for name, svg in art_fx.astro_all():
+        astro.add_costume(name, svg, art_fx.AC, art_fx.AC)
+    astro.x, astro.y, astro.layer = ASTRO_POS[1][0], ASTRO_POS[1][1], 1
+    astro.visible = False
+
+    def astro_bob(by):   # sobe e desce suave
+        return add(by, mul(7, mathop("sin", mul(timer(), 55))))
+    pos_chain = [if_(eq(var("fase"), n),
+                     [goto_xy(ASTRO_POS[n][0], astro_bob(ASTRO_POS[n][1]))])
+                 for n in range(1, 6)]
+    astro.script(
+        on_flag(), hide(), set_size(100), point_dir(90),
+        forever([
+            if_else(visible_phase(), [
+                switch_costume(var("fase")),
+                *pos_chain,
+                point_dir(pulse(90, 4, 35)),     # leve balanço
+                set_size(pulse(102, 6, 80)),     # pulsa
+                show(),
+            ], [hide()]),
+        ]),
+    )
+    P.add_sprite(astro)
+
+    # =====================================================================
+    # PARTÍCULAS - motes que flutuam no fundo (clones que derivam)
+    # =====================================================================
+    part = Target("Particula")
+    for name, svg in art_fx.part_all():
+        part.add_costume(name, svg, 10, 10)
+    part.x, part.y, part.layer = 0, 0, 2
+    part.visible = False
+    part.script(
+        on_flag(), hide(),
+        repeat(16, [goto_xy(rnd(-230, 230), rnd(-50, 150)), create_clone_self()]),
+    )
+    part.script(
+        on_clone(),
+        set_size(rnd(70, 150)),
+        forever([
+            if_else(visible_phase(), [
+                switch_costume(var("fase")), set_effect("ghost", 40), show(),
+                # deriva p/ esquerda com parallax (mais alto = mais rápido)
+                change_x(sub(0, add(0.6, div(add(ypos(), 180), 220)))),
+                if_(lt(xpos(), -238), [set_x(238), set_y(rnd(-50, 150))]),
+            ], [hide()]),
+        ]),
+    )
+    P.add_sprite(part)
+
+    # =====================================================================
+    # RÓTULO - texto da era + período (topo, durante a fase)
+    # =====================================================================
+    rot = Target("Rotulo")
+    for name, svg in art_fx.rotulo_all():
+        rot.add_costume(name, svg, art_fx.RW / 2, art_fx.RH / 2)
+    rot.x, rot.y, rot.layer = 0, 150, 13
+    rot.visible = False
+    rot.script(
+        on_flag(), hide(), set_size(100), goto_xy(0, 150),
+        forever([
+            if_else(playing(),
+                    [switch_costume(var("fase")), goto_xy(0, 150), show()],
+                    [hide()]),
+        ]),
+    )
+    P.add_sprite(rot)
+
+    # =====================================================================
     # DIRETOR (controla o fluxo)  -- invisível
     # =====================================================================
     dirc = Target("Diretor")
     dirc.add_costume("dot", art_ui.dot_costume(), 4, 4)
-    dirc.x, dirc.y, dirc.layer = 240, 175, 16
+    dirc.x, dirc.y, dirc.layer = 240, 175, 19
     dirc.visible = False
 
     def reset_items():

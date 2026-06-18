@@ -29,3 +29,4 @@ _vmtest/node_modules/
 _vmtest/package-lock.json
 build/__pycache__/
 preview/
+_up/

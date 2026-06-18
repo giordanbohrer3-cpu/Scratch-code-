@@ -146,4 +146,14 @@ PHASES = [
         "layout": _layout(48, 56),
     },
 ]
+# Posição (Scratch x,y) do "Astro" animado em cada fase, escolhida para
+# complementar o elemento celeste do fundo (sem duplicar de forma estranha).
+ASTRO_POS = {
+    1: (132, 86),    # sobre o sol do Egito -> sol animado
+    2: (168, 122),   # sobre a lua da catedral -> lua animada
+    3: (164, 104),   # sobre o sol geométrico do cubismo
+    4: (132, 104),   # lado direito (as espirais do fundo ficam à esquerda)
+    5: (140, 108),   # lado direito (o "POP" do fundo fica à esquerda)
+}
+
 PHASE_BY_NUM = {p["num"]: p for p in PHASES}

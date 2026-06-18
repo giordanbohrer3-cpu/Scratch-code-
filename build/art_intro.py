@@ -109,8 +109,9 @@ def title_screen():
     b.append(text(240, 124, 40, "A DUPLA DAS ARTES", "#ffffff", "900", "middle", font=FONT_TITLE))
     b.append(text(240, 124, 40, "A DUPLA DAS ARTES", "none", "900", "middle", font=FONT_TITLE))
     b.append(text(240, 156, 16, "Uma aventura pela história da arte", "#ffd98a", "600", "middle", italic=True))
-    b.append(text(240, 234, 13, "Theo & Lia  •  5 eras  •  20 relíquias", "#ffffff", "700", "middle", opacity=0.85))
-    b.append(text(240, 256, 12, "← →  mover    ESPAÇO  pular  (os dois ao mesmo tempo!)", "#ffffff", "600", "middle", opacity=0.7))
+    b.append(text(240, 232, 13, "Theo & Lia  •  5 eras  •  20 relíquias", "#ffffff", "700", "middle", opacity=0.85))
+    b.append(text(240, 252, 12.5, "Theo: W A D     Lia: ← → setas", "#ffffff", "700", "middle", opacity=0.8))
+    b.append(text(240, 270, 12, "ESPAÇO: os dois pulam juntos!", "#ffd98a", "700", "middle", opacity=0.85))
     return svg_doc(W, H, "".join(b), defs)
 
 

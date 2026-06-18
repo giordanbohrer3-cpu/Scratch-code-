@@ -12,10 +12,13 @@ Um jogo de plataforma educativo feito em **Scratch (.sb3)**, no estilo
 
 ## 🕹️ Como jogar
 
-| Ação | Teclas |
-|------|--------|
-| Mover os dois | **← →** (ou **A / D**) |
-| Pular os dois ao mesmo tempo | **ESPAÇO** (ou **↑ / W**) |
+Cada personagem tem **controles próprios** (estilo Fogo & Água):
+
+| Personagem | Mover | Pular |
+|------------|-------|-------|
+| **Theo** | **A** / **D** | **W** |
+| **Lia** | **←** / **→** | **↑** |
+| **Os dois juntos** | — | **ESPAÇO** (pulam ao mesmo tempo!) |
 
 Clique no botão verde **COMEÇAR**. Em cada fase:
 

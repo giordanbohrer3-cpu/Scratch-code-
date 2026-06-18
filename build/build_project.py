@@ -2,9 +2,10 @@
 """build_project.py - Monta o jogo completo "A Dupla das Artes" em .sb3.
 
 Plataforma estilo Fogo & Água / Mario:
-  - física com gravidade, pulo e colisão por sprite (Chão / Obstáculo)
-  - ESPAÇO faz os dois pularem juntos; ←/→ (ou A/D) movem os dois
+  - física com gravidade, pulo e colisão por matemática (chão + obstáculos)
+  - controles separados: Theo = WASD, Lia = setas; ESPAÇO = os dois pulam
   - 5 fases em ordem cronológica, cada uma com tela animada de 7s
+  - chão/obstáculos por fase, fundo animado (astro + partículas), rótulo da era
   - coletáveis, portas no chão, animações de coleta / porta / fim de fase
 """
 from sb3lib import *

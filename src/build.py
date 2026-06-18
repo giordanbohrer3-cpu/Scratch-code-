@@ -9,13 +9,11 @@ os.makedirs(OUT)
 
 # ---- keep original binary assets ----
 KEEP = [
- "67fa25c297d4605eaa15d2739116e9aa.png", # BG
  "03a82c2be11da11c2ba3269194ab1339.png", # level2
  "b0fcaf39b6d413c226888d13fab73ab2.png", # level3
  "dddd22507d06382ce01641556b352680.png", # level4
  "0a67a26e0addf684c86113670ba028d9.png", # level5
  "44880a937e12278a93a7e692307e9060.png", # GAME OVER
- "3826a4091a33e4d26f87a2fac7cf796b.svg", # apple
  "83a9787d4cb6f3b7632b4ddfebf74367.wav", # pop
  "0b1e3033140d094563248e61de4039e5.wav", # chomp
 ]
@@ -33,6 +31,12 @@ MATURE=add_svg(assets.MATURE_SVG)
 MENU=add_svg(assets.MENU_SVG)
 PILLP=add_svg(assets.PILL_PLAY_SVG)
 PILLB=add_svg(assets.PILL_BACK_SVG)
+BG=add_svg(assets.BG_SVG)
+APPLE=add_svg(assets.APPLE_SVG)
+BANANA=add_svg(assets.BANANA_SVG)
+CHERRY=add_svg(assets.CHERRY_SVG)
+GRAPE=add_svg(assets.GRAPE_SVG)
+STAR=add_svg(assets.STAR_SVG)
 
 # ========================= block helpers =========================
 _c=[0]
@@ -83,6 +87,8 @@ def And(tb,a,b): return mk(tb,"operator_and",{"OPERAND1":boolin(a),"OPERAND2":bo
 def Not(tb,a): return mk(tb,"operator_not",{"OPERAND":boolin(a)})
 def cif(tb,cond,substack_first):
     return mk(tb,"control_if",{"CONDITION":boolin(cond),"SUBSTACK":sub(substack_first)})
+def cifelse(tb,cond,sub1,sub2):
+    return mk(tb,"control_if_else",{"CONDITION":boolin(cond),"SUBSTACK":sub(sub1),"SUBSTACK2":sub(sub2)})
 def forever(tb,substack_first):
     return mk(tb,"control_forever",{"SUBSTACK":sub(substack_first)})
 def repeatuntil(tb,cond,substack_first):
@@ -101,6 +107,10 @@ def switchbackdrop(tb,name):
 def switchcostume(tb,name):
     m=menu(tb,"looks_costume","COSTUME",name)
     return mk(tb,"looks_switchcostumeto",{"COSTUME":menu_in(m)})
+def switchcostume_num(tb,reporter_id):
+    m=menu(tb,"looks_costume","COSTUME","Apple")
+    return mk(tb,"looks_switchcostumeto",{"COSTUME":[3,reporter_id,m]})
+def costname(tb): return mk(tb,"looks_costumenumbername",{},{"NUMBER_NAME":["name",None]})
 def playsound(tb,name):
     m=menu(tb,"sound_sounds_menu","SOUND_MENU",name)
     return mk(tb,"sound_play",{"SOUND_MENU":menu_in(m)})
@@ -217,10 +227,11 @@ e11=waitsec(ctb,posn(0.2))
 # forever body
 mv=movesteps(ctb,rep(Vrep(ctb,V_SPEED)))
 # wrap ifs
-w1=cif(ctb, gt(ctb,xpos(ctb),num(240)), setx(ctb,num(-240)))
-w2=cif(ctb, lt(ctb,xpos(ctb),num(-240)), setx(ctb,num(240)))
-w3=cif(ctb, gt(ctb,ypos(ctb),num(176)), sety(ctb,num(-176)))
-w4=cif(ctb, lt(ctb,ypos(ctb),num(-176)), sety(ctb,num(176)))
+# wrap-around (thresholds inside Scratch's 15px fence so they reliably fire on all 4 sides)
+w1=cif(ctb, gt(ctb,xpos(ctb),num(236)), setx(ctb,num(-236)))
+w2=cif(ctb, lt(ctb,xpos(ctb),num(-236)), setx(ctb,num(236)))
+w3=cif(ctb, gt(ctb,ypos(ctb),num(172)), sety(ctb,num(-172)))
+w4=cif(ctb, lt(ctb,ypos(ctb),num(-172)), sety(ctb,num(172)))
 cl=createclone(ctb)
 # self collision
 deadbc=broadcast(ctb,*BC_OVER)
@@ -300,26 +311,34 @@ fix_parents(ctb)
 position_top(ctb,e0,40,40); position_top(ctb,i0,500,40); position_top(ctb,b0,900,40)
 position_top(ctb,cc0,1250,40); position_top(ctb,d0,40,760); position_top(ctb,h0,500,760)
 
-# ============================ APPLE ============================
+# ============================ FRUTA (Apple/Banana/Uva/Cereja/Estrela) ============================
+# costume order: 1=Apple 2=Banana 3=Uva 4=Cereja 5=Estrela
 atb={}
 a0=hat_recv(atb,*BC_START)
-a1=mk(atb,"looks_show")
-a2=gotoxy(atb,rnd(atb,-210,210),rnd(atb,-150,150))
-# forever eat
+a1=switchcostume_num(atb, rnd(atb,1,5))
+a2=mk(atb,"looks_show")
+a3=gotoxy(atb,rnd(atb,-210,210),rnd(atb,-150,150))
+# --- eat sequence ---
 eat_play=playsound(atb,"Chomp")
-eat_sc=changevar(atb,V_SCORE[0],V_SCORE[1],num(1))
+# points by costume name: Estrela +3, Cereja +2, others +1
+inner_else=changevar(atb,V_SCORE[0],V_SCORE[1],num(1))   # default fruits
+cereja_branch=changevar(atb,V_SCORE[0],V_SCORE[1],num(2))
+nested=cifelse(atb, eq(atb,costname(atb),txt("Cereja")), cereja_branch, inner_else)
+estrela_branch=changevar(atb,V_SCORE[0],V_SCORE[1],num(3))
+pts=cifelse(atb, eq(atb,costname(atb),txt("Estrela")), estrela_branch, nested)
 eat_tr=changevar(atb,V_TRAIL[0],V_TRAIL[1],num(0.05))
+new_cost=switchcostume_num(atb, rnd(atb,1,5))
 rep_goto=gotoxy(atb,rnd(atb,-210,210),rnd(atb,-150,150))
 rep_loop=repeatuntil(atb, Not(atb,touchingobj(atb,"Cobra")), rep_goto)
-chain(atb,[eat_play,eat_sc,eat_tr,rep_loop])
+chain(atb,[eat_play,pts,eat_tr,new_cost,rep_loop])
 eatif=cif(atb, touchingobj(atb,"Cobra"), eat_play)
 af=forever(atb,eatif)
-chain(atb,[a0,a1,a2,af])
+chain(atb,[a0,a1,a2,a3,af])
 # hide on menu/over
 ah0=hat_recv(atb,*BC_MENU); ah1=mk(atb,"looks_hide"); chain(atb,[ah0,ah1])
 ao0=hat_recv(atb,*BC_OVER); ao1=mk(atb,"looks_hide"); chain(atb,[ao0,ao1])
 fix_parents(atb)
-position_top(atb,a0,40,40); position_top(atb,ah0,40,400); position_top(atb,ao0,360,400)
+position_top(atb,a0,40,40); position_top(atb,ah0,40,520); position_top(atb,ao0,360,520)
 
 # ============================ PRESS START ============================
 ptb={}
@@ -379,7 +398,7 @@ stage={
  "blocks":stb,"comments":{},"currentCostume":0,
  "costumes":[
    {"name":"Menu","dataFormat":"svg","assetId":MENU,"md5ext":MENU+".svg","rotationCenterX":240,"rotationCenterY":180},
-   {"name":"BG","bitmapResolution":2,"dataFormat":"png","assetId":"67fa25c297d4605eaa15d2739116e9aa","md5ext":"67fa25c297d4605eaa15d2739116e9aa.png","rotationCenterX":479,"rotationCenterY":360},
+   {"name":"BG","dataFormat":"svg","assetId":BG,"md5ext":BG+".svg","rotationCenterX":240,"rotationCenterY":180},
    {"name":"level 2 cobrinha","bitmapResolution":2,"dataFormat":"png","assetId":"03a82c2be11da11c2ba3269194ab1339","md5ext":"03a82c2be11da11c2ba3269194ab1339.png","rotationCenterX":480,"rotationCenterY":360},
    {"name":"level 3 cobrinha","bitmapResolution":2,"dataFormat":"png","assetId":"b0fcaf39b6d413c226888d13fab73ab2","md5ext":"b0fcaf39b6d413c226888d13fab73ab2.png","rotationCenterX":480,"rotationCenterY":360},
    {"name":"level 4 cobrinha","bitmapResolution":2,"dataFormat":"png","assetId":"dddd22507d06382ce01641556b352680","md5ext":"dddd22507d06382ce01641556b352680.png","rotationCenterX":480,"rotationCenterY":360},
@@ -402,12 +421,18 @@ cobra={
  "draggable":False,"rotationStyle":"all around",
 }
 apple={
- "isStage":False,"name":"Apple","variables":{},"lists":{},"broadcasts":{},"blocks":atb,"comments":{},
+ "isStage":False,"name":"Fruta","variables":{},"lists":{},"broadcasts":{},"blocks":atb,"comments":{},
  "currentCostume":0,
- "costumes":[{"name":"Apple","bitmapResolution":1,"dataFormat":"svg","assetId":"3826a4091a33e4d26f87a2fac7cf796b","md5ext":"3826a4091a33e4d26f87a2fac7cf796b.svg","rotationCenterX":31,"rotationCenterY":31}],
+ "costumes":[
+   {"name":"Apple","dataFormat":"svg","assetId":APPLE,"md5ext":APPLE+".svg","rotationCenterX":32,"rotationCenterY":32},
+   {"name":"Banana","dataFormat":"svg","assetId":BANANA,"md5ext":BANANA+".svg","rotationCenterX":32,"rotationCenterY":32},
+   {"name":"Uva","dataFormat":"svg","assetId":GRAPE,"md5ext":GRAPE+".svg","rotationCenterX":32,"rotationCenterY":32},
+   {"name":"Cereja","dataFormat":"svg","assetId":CHERRY,"md5ext":CHERRY+".svg","rotationCenterX":32,"rotationCenterY":32},
+   {"name":"Estrela","dataFormat":"svg","assetId":STAR,"md5ext":STAR+".svg","rotationCenterX":32,"rotationCenterY":32},
+ ],
  "sounds":[{"name":"Chomp","assetId":"0b1e3033140d094563248e61de4039e5","dataFormat":"wav","rate":48000,"sampleCount":12678,"md5ext":"0b1e3033140d094563248e61de4039e5.wav"}],
- "volume":100,"layerOrder":3,"visible":False,"x":0,"y":0,"size":45,"direction":90,
- "draggable":False,"rotationStyle":"all around",
+ "volume":100,"layerOrder":3,"visible":False,"x":0,"y":0,"size":48,"direction":90,
+ "draggable":False,"rotationStyle":"don't rotate",
 }
 press={
  "isStage":False,"name":"PressStart","variables":{},"lists":{},"broadcasts":{},"blocks":ptb,"comments":{},

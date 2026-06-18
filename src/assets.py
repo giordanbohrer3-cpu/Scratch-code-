@@ -2,19 +2,29 @@
 import math
 
 # ----------------------------- SNAKE -----------------------------
-HEAD_SVG = '''<svg xmlns="http://www.w3.org/2000/svg" width="30" height="22" viewBox="0 0 30 22">
-<defs>
-<radialGradient id="hg" cx="38%" cy="32%" r="80%">
-<stop offset="0%" stop-color="#FFC766"/><stop offset="55%" stop-color="#FF7A12"/><stop offset="100%" stop-color="#DD5400"/>
-</radialGradient></defs>
-<path d="M19 11 L25 11 M25 11 L29 8.3 M25 11 L29 13.7" stroke="#E11D2A" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="11" cy="11" r="10" fill="url(#hg)" stroke="#B83F00" stroke-width="1.7"/>
-<path d="M3 8 Q11 3 19 8" stroke="#FFD9A0" stroke-width="1.2" fill="none" opacity="0.6" stroke-linecap="round"/>
-<circle cx="17.5" cy="13.3" r="0.7" fill="#9b3b00"/><circle cx="17.5" cy="8.7" r="0.7" fill="#9b3b00"/>
-<circle cx="14.3" cy="6.8" r="3.2" fill="#ffffff"/><circle cx="14.3" cy="15.2" r="3.2" fill="#ffffff"/>
-<circle cx="15.7" cy="6.8" r="1.6" fill="#1a1a1a"/><circle cx="15.7" cy="15.2" r="1.6" fill="#1a1a1a"/>
-<circle cx="15.1" cy="6.1" r="0.6" fill="#ffffff"/><circle cx="15.1" cy="14.5" r="0.6" fill="#ffffff"/>
-</svg>'''
+# Head with a parametric tongue so it can flick in and out (3 frames).
+def head_svg(tongue):
+    return ('<svg xmlns="http://www.w3.org/2000/svg" width="30" height="22" viewBox="0 0 30 22">'
+    '<defs><radialGradient id="hg" cx="38%" cy="32%" r="80%">'
+    '<stop offset="0%" stop-color="#FFC766"/><stop offset="55%" stop-color="#FF7A12"/><stop offset="100%" stop-color="#DD5400"/>'
+    '</radialGradient></defs>'
+    + tongue +
+    '<circle cx="11" cy="11" r="10" fill="url(#hg)" stroke="#B83F00" stroke-width="1.7"/>'
+    '<path d="M3 8 Q11 3 19 8" stroke="#FFD9A0" stroke-width="1.2" fill="none" opacity="0.6" stroke-linecap="round"/>'
+    '<circle cx="17.5" cy="13.3" r="0.7" fill="#9b3b00"/><circle cx="17.5" cy="8.7" r="0.7" fill="#9b3b00"/>'
+    '<circle cx="14.3" cy="6.8" r="3.2" fill="#ffffff"/><circle cx="14.3" cy="15.2" r="3.2" fill="#ffffff"/>'
+    '<circle cx="15.7" cy="6.8" r="1.6" fill="#1a1a1a"/><circle cx="15.7" cy="15.2" r="1.6" fill="#1a1a1a"/>'
+    '<circle cx="15.1" cy="6.1" r="0.6" fill="#ffffff"/><circle cx="15.1" cy="14.5" r="0.6" fill="#ffffff"/>'
+    '</svg>')
+
+_TONGUE_OUT = '<path d="M19 11 L25 11 M25 11 L29.2 8.0 M25 11 L29.2 14.0" stroke="#E11D2A" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'
+_TONGUE_MID = '<path d="M19 11 L23 11 M23 11 L25.6 9.4 M23 11 L25.6 12.6" stroke="#E11D2A" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'
+_TONGUE_IN  = '<path d="M19.5 11 L21.2 11 M21.2 11 L22.2 10.3 M21.2 11 L22.2 11.7" stroke="#E11D2A" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'
+
+HEAD_OUT = head_svg(_TONGUE_OUT)
+HEAD_MID = head_svg(_TONGUE_MID)
+HEAD_IN  = head_svg(_TONGUE_IN)
+HEAD_SVG = HEAD_OUT  # backwards-compat alias
 
 YOUNG_SVG = '''<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
 <defs><radialGradient id="yg" cx="36%" cy="32%" r="78%"><stop offset="0%" stop-color="#FFE0A0"/><stop offset="60%" stop-color="#FFA836"/><stop offset="100%" stop-color="#F08A14"/></radialGradient></defs>
@@ -179,3 +189,21 @@ PILL_BACK_SVG = '''<svg xmlns="http://www.w3.org/2000/svg" width="340" height="7
 <rect x="4" y="4" width="332" height="68" rx="34" fill="url(#pb)" stroke="#ffffff" stroke-width="3"/>
 <text x="170" y="47" font-family="Helvetica, Arial, sans-serif" font-size="24" font-weight="bold" fill="#ffffff" text-anchor="middle" letter-spacing="1">ESPACO = MENU</text>
 </svg>'''
+
+# ----------------------------- LEVEL-UP BANNER -----------------------------
+def level_badge(n, c1, c2):
+    return ('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="120" viewBox="0 0 300 120">'
+    '<defs>'
+    '<linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="C1"/><stop offset="100%" stop-color="C2"/></linearGradient>'
+    '<filter id="g" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="5"/></filter>'
+    '</defs>'
+    '<rect x="22" y="34" width="256" height="58" rx="29" fill="C2" opacity="0.55" filter="url(#g)"/>'
+    '<rect x="24" y="30" width="252" height="58" rx="29" fill="url(#bg)" stroke="#ffffff" stroke-width="3.5"/>'
+    '<path d="M150 8 l4 9 l10 1 l-7 7 l2 10 l-9 -5 l-9 5 l2 -10 l-7 -7 l10 -1 z" fill="#FFE36A" stroke="#caa400" stroke-width="1.2"/>'
+    '<text x="150" y="70" font-family="Helvetica, Arial, sans-serif" font-size="34" font-weight="900" fill="#ffffff" text-anchor="middle" stroke="#00000033" stroke-width="0.6" letter-spacing="2">NIVEL NUM</text>'
+    '</svg>').replace("NUM", str(n)).replace("C1", c1).replace("C2", c2)
+
+NIVEL2 = level_badge(2, "#5BE584", "#1Fae54")   # green
+NIVEL3 = level_badge(3, "#6FD0FF", "#1E8BFF")   # blue
+NIVEL4 = level_badge(4, "#C79BFF", "#7A2FD0")   # purple
+NIVEL5 = level_badge(5, "#FFE36A", "#F5A300")   # gold

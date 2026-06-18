@@ -25,7 +25,9 @@ def add_svg(svg):
     md5=hashlib.md5(data).hexdigest()
     open(os.path.join(OUT,md5+".svg"),"wb").write(data)
     return md5
-HEAD=add_svg(assets.HEAD_SVG)
+HEAD_OUT=add_svg(assets.HEAD_OUT)
+HEAD_MID=add_svg(assets.HEAD_MID)
+HEAD_IN=add_svg(assets.HEAD_IN)
 YOUNG=add_svg(assets.YOUNG_SVG)
 MATURE=add_svg(assets.MATURE_SVG)
 MENU=add_svg(assets.MENU_SVG)
@@ -37,6 +39,10 @@ BANANA=add_svg(assets.BANANA_SVG)
 CHERRY=add_svg(assets.CHERRY_SVG)
 GRAPE=add_svg(assets.GRAPE_SVG)
 STAR=add_svg(assets.STAR_SVG)
+NIVEL2=add_svg(assets.NIVEL2)
+NIVEL3=add_svg(assets.NIVEL3)
+NIVEL4=add_svg(assets.NIVEL4)
+NIVEL5=add_svg(assets.NIVEL5)
 
 # ========================= block helpers =========================
 _c=[0]
@@ -136,6 +142,9 @@ def gofront(tb): return mk(tb,"looks_gotofrontback",{},{"FRONT_BACK":["front",No
 def changesize(tb,v): return mk(tb,"looks_changesizeby",{"CHANGE":num(v)})
 def setsize(tb,v): return mk(tb,"looks_setsizeto",{"SIZE":num(v)})
 def cleareffects(tb): return mk(tb,"looks_cleargraphiceffects")
+def seteffect(tb,eff,v): return mk(tb,"looks_seteffectto",{"VALUE":vin(num(v))},{"EFFECT":[eff,None]})
+def changeeffect(tb,eff,v): return mk(tb,"looks_changeeffectby",{"CHANGE":vin(num(v))},{"EFFECT":[eff,None]})
+def subtract(tb,a,b): return mk(tb,"operator_subtract",{"NUM1":vin(a),"NUM2":vin(b)})
 def repeatn(tb,n,substack_first): return mk(tb,"control_repeat",{"TIMES":num(n),"SUBSTACK":sub(substack_first)})
 
 def hat_flag(tb): return mk(tb,"event_whenflagclicked",top=True)
@@ -176,6 +185,7 @@ V_STATE=("ESTADO","var_state")
 BC_MENU=("tela inicial","bc_menu")
 BC_START=("iniciar jogo","bc_start")
 BC_OVER=("game over","bc_over")
+BC_LEVELUP=("nivelup","bc_levelup")
 
 def Vrep(tb,V): return varrep(tb,V[0],V[1])
 
@@ -224,9 +234,8 @@ e8=switchcostume(ctb,"Cabeca")
 e9=cleareffects(ctb)
 e10=mk(ctb,"looks_show")
 e11=waitsec(ctb,posn(0.2))
-# forever body
+# forever body (no waits -> never pauses)
 mv=movesteps(ctb,rep(Vrep(ctb,V_SPEED)))
-# wrap ifs
 # wrap-around (thresholds inside Scratch's 15px fence so they reliably fire on all 4 sides)
 w1=cif(ctb, gt(ctb,xpos(ctb),num(236)), setx(ctb,num(-236)))
 w2=cif(ctb, lt(ctb,xpos(ctb),num(-236)), setx(ctb,num(236)))
@@ -238,30 +247,39 @@ deadbc=broadcast(ctb,*BC_OVER)
 deadstop=stopthis(ctb)
 chain(ctb,[deadbc,deadstop])
 deadif=cif(ctb, touchingcolor(ctb,"#FF2D95"), deadbc)
-# level ups (highest first)
-def levelup(level, speed, backdrop):
-    cond=And(ctb, Not(ctb, lt(ctb,Vrep(ctb,V_SCORE),num({5:5,4:15,3:10,2:5}[level] if False else 0))), eq(ctb,num(0),num(0)))
-    return cond
-# build level ifs explicitly
-def lvif(score_th, lvl, speed, backdrop):
+chain(ctb,[mv,w1,w2,w3,w4,cl,deadif])
+fev=forever(ctb,mv)
+chain(ctb,[e0,e1,e2,e3,e4,e5,e6,e7,e8,e9,e10,e11,fev])
+
+# ---- LEVEL MANAGER (parallel thread -> changing level never pauses the game) ----
+lm0=hat_recv(ctb,*BC_START)
+def lvif(score_th, lvl, speed):
     cond=And(ctb,
              Not(ctb, lt(ctb, Vrep(ctb,V_SCORE), num(score_th))),   # score >= th
              lt(ctb, Vrep(ctb,V_LEVEL), num(lvl)))                  # level < lvl
     a=setvar(ctb,V_LEVEL[0],V_LEVEL[1],num(lvl))
     b=setvar(ctb,V_SPEED[0],V_SPEED[1],num(speed))
-    c=switchbackdrop(ctb,backdrop)
-    d=waitsec(ctb,posn(0.8))
-    e=switchbackdrop(ctb,"BG")
-    chain(ctb,[a,b,c,d,e])
+    c=broadcast(ctb,*BC_LEVELUP)
+    chain(ctb,[a,b,c])
     return cif(ctb,cond,a)
-L5=lvif(20,5,9,"level 5 fim de jogo cobrinha")
-L4=lvif(15,4,8,"level 4 cobrinha")
-L3=lvif(10,3,7,"level 3 cobrinha")
-L2=lvif(5,2,6,"level 2 cobrinha")
-chain(ctb,[mv,w1,w2,w3,w4,cl,deadif,L5,L4,L3,L2])
-fbody=mv
-fev=forever(ctb,fbody)
-chain(ctb,[e0,e1,e2,e3,e4,e5,e6,e7,e8,e9,e10,e11,fev])
+LM5=lvif(20,5,9); LM4=lvif(15,4,8); LM3=lvif(10,3,7); LM2=lvif(5,2,6)
+chain(ctb,[LM5,LM4,LM3,LM2])
+lmf=forever(ctb,LM5)
+chain(ctb,[lm0,lmf])
+
+# ---- TONGUE FLICK (parallel thread on the head/original only) ----
+tg0=hat_recv(ctb,*BC_START)
+tg_in1=switchcostume(ctb,"CabecaDentro"); tg_w1=waitsec(ctb,posn(0.7))
+tg_mid1=switchcostume(ctb,"CabecaMeio"); tg_w2=waitsec(ctb,posn(0.06))
+tg_out=switchcostume(ctb,"Cabeca"); tg_w3=waitsec(ctb,posn(0.12))
+tg_mid2=switchcostume(ctb,"CabecaMeio"); tg_w4=waitsec(ctb,posn(0.06))
+tg_in2=switchcostume(ctb,"CabecaDentro"); tg_w5=waitsec(ctb,posn(0.12))
+tg_mid3=switchcostume(ctb,"CabecaMeio"); tg_w6=waitsec(ctb,posn(0.06))
+tg_out2=switchcostume(ctb,"Cabeca"); tg_w7=waitsec(ctb,posn(0.12))
+tg_mid4=switchcostume(ctb,"CabecaMeio"); tg_w8=waitsec(ctb,posn(0.06))
+chain(ctb,[tg_in1,tg_w1,tg_mid1,tg_w2,tg_out,tg_w3,tg_mid2,tg_w4,tg_in2,tg_w5,tg_mid3,tg_w6,tg_out2,tg_w7,tg_mid4,tg_w8])
+tgf=forever(ctb,tg_in1)
+chain(ctb,[tg0,tgf])
 
 # ---- INPUT (on start) ----
 i0=hat_recv(ctb,*BC_START)
@@ -286,9 +304,9 @@ b4=waitsec(ctb,rep(Vrep(ctb,V_TRAIL)))
 b5=delclone(ctb)
 chain(ctb,[b0,b1,b2,b3,b4,b5])
 
-# ---- clone cleanup on start ----
+# ---- clone cleanup on start (body clones are costumes 4-5; heads are 1-3) ----
 cc0=hat_recv(ctb,*BC_START)
-cc1=cif(ctb, gt(ctb,costnum(ctb),num(1)), delclone(ctb))
+cc1=cif(ctb, gt(ctb,costnum(ctb),num(3)), delclone(ctb))
 chain(ctb,[cc0,cc1])
 
 # ---- death fx (only the head/original, not body clones) ----
@@ -298,7 +316,7 @@ d2=playsound(ctb,"pop")
 d3=cif(ctb, gt(ctb,Vrep(ctb,V_SCORE),Vrep(ctb,V_RECORD)),
         setvar(ctb,V_RECORD[0],V_RECORD[1],rep(Vrep(ctb,V_SCORE))))
 chain(ctb,[d1,d2,d3])
-dguard=cif(ctb, eq(ctb,costnum(ctb),num(1)), d1)
+dguard=cif(ctb, lt(ctb,costnum(ctb),num(4)), d1)   # only the head (costumes 1-3), not body clones
 chain(ctb,[d0,dguard])
 
 # ---- hide on menu ----
@@ -308,8 +326,9 @@ h2=setvar(ctb,V_STATE[0],V_STATE[1],txt("menu"))
 chain(ctb,[h0,h1,h2])
 
 fix_parents(ctb)
-position_top(ctb,e0,40,40); position_top(ctb,i0,500,40); position_top(ctb,b0,900,40)
-position_top(ctb,cc0,1250,40); position_top(ctb,d0,40,760); position_top(ctb,h0,500,760)
+position_top(ctb,e0,40,40); position_top(ctb,i0,520,40); position_top(ctb,b0,1000,40)
+position_top(ctb,cc0,1360,40); position_top(ctb,d0,40,900); position_top(ctb,h0,520,900)
+position_top(ctb,lm0,1700,40); position_top(ctb,tg0,2050,40)
 
 # ============================ FRUTA (Apple/Banana/Uva/Cereja/Estrela) ============================
 # costume order: 1=Apple 2=Banana 3=Uva 4=Cereja 5=Estrela
@@ -386,12 +405,36 @@ fix_parents(ptb)
 position_top(ptb,ps0,40,40); position_top(ptb,ph0,40,300); position_top(ptb,pb0,360,300)
 position_top(ptb,pu0,40,520); position_top(ptb,sk0,40,760); position_top(ptb,ck0,500,760)
 
+# ============================ NIVEL (banner de subida de nivel) ============================
+# costumes: 1=NIVEL2 2=NIVEL3 3=NIVEL4 4=NIVEL5  -> costume index = NIVEL-1
+ntb={}
+# hide in menu/start/over
+nh0=hat_recv(ntb,*BC_MENU); nh1=mk(ntb,"looks_hide"); chain(ntb,[nh0,nh1])
+ns0=hat_recv(ntb,*BC_START); ns1=mk(ntb,"looks_hide"); chain(ntb,[ns0,ns1])
+no0=hat_recv(ntb,*BC_OVER); no1=mk(ntb,"looks_hide"); chain(ntb,[no0,no1])
+# animate on level up (own thread -> non-blocking)
+na0=hat_recv(ntb,*BC_LEVELUP)
+na1=switchcostume_num(ntb, subtract(ntb, Vrep(ntb,V_LEVEL), num(1)))
+na2=seteffect(ntb,"ghost",0)
+na3=setsize(ntb,40)
+na4=gotoxy(ntb,num(0),num(120))
+na5=mk(ntb,"looks_show")
+na6=gofront(ntb)
+grow=changesize(ntb,9); rgrow=repeatn(ntb,8,grow)
+settle=changesize(ntb,-3.4); rsettle=repeatn(ntb,5,settle)
+na7=waitsec(ntb,posn(0.5))
+fade=changeeffect(ntb,"ghost",10); rfade=repeatn(ntb,10,fade)
+na8=mk(ntb,"looks_hide")
+chain(ntb,[na0,na1,na2,na3,na4,na5,na6,rgrow,rsettle,na7,rfade,na8])
+fix_parents(ntb)
+position_top(ntb,nh0,40,40); position_top(ntb,ns0,360,40); position_top(ntb,no0,680,40); position_top(ntb,na0,40,200)
+
 # ============================ ASSEMBLE ============================
 stage_vars={
  V_SCORE[1]:[V_SCORE[0],0], V_RECORD[1]:[V_RECORD[0],0], V_LEVEL[1]:[V_LEVEL[0],1],
  V_SPEED[1]:[V_SPEED[0],5], V_TRAIL[1]:[V_TRAIL[0],0.25], V_STATE[1]:[V_STATE[0],"menu"],
 }
-broadcasts={BC_MENU[1]:BC_MENU[0],BC_START[1]:BC_START[0],BC_OVER[1]:BC_OVER[0]}
+broadcasts={BC_MENU[1]:BC_MENU[0],BC_START[1]:BC_START[0],BC_OVER[1]:BC_OVER[0],BC_LEVELUP[1]:BC_LEVELUP[0]}
 
 stage={
  "isStage":True,"name":"Stage","variables":stage_vars,"lists":{},"broadcasts":broadcasts,
@@ -412,7 +455,9 @@ cobra={
  "isStage":False,"name":"Cobra","variables":{},"lists":{},"broadcasts":{},"blocks":ctb,"comments":{},
  "currentCostume":0,
  "costumes":[
-   {"name":"Cabeca","dataFormat":"svg","assetId":HEAD,"md5ext":HEAD+".svg","rotationCenterX":11,"rotationCenterY":11},
+   {"name":"Cabeca","dataFormat":"svg","assetId":HEAD_OUT,"md5ext":HEAD_OUT+".svg","rotationCenterX":11,"rotationCenterY":11},
+   {"name":"CabecaMeio","dataFormat":"svg","assetId":HEAD_MID,"md5ext":HEAD_MID+".svg","rotationCenterX":11,"rotationCenterY":11},
+   {"name":"CabecaDentro","dataFormat":"svg","assetId":HEAD_IN,"md5ext":HEAD_IN+".svg","rotationCenterX":11,"rotationCenterY":11},
    {"name":"Corpo","dataFormat":"svg","assetId":YOUNG,"md5ext":YOUNG+".svg","rotationCenterX":8,"rotationCenterY":8},
    {"name":"CorpoMaduro","dataFormat":"svg","assetId":MATURE,"md5ext":MATURE+".svg","rotationCenterX":8,"rotationCenterY":8},
  ],
@@ -445,6 +490,19 @@ press={
  "volume":100,"layerOrder":1,"visible":False,"x":0,"y":-152,"size":100,"direction":90,
  "draggable":False,"rotationStyle":"all around",
 }
+nivel={
+ "isStage":False,"name":"Nivel","variables":{},"lists":{},"broadcasts":{},"blocks":ntb,"comments":{},
+ "currentCostume":0,
+ "costumes":[
+   {"name":"N2","dataFormat":"svg","assetId":NIVEL2,"md5ext":NIVEL2+".svg","rotationCenterX":150,"rotationCenterY":60},
+   {"name":"N3","dataFormat":"svg","assetId":NIVEL3,"md5ext":NIVEL3+".svg","rotationCenterX":150,"rotationCenterY":60},
+   {"name":"N4","dataFormat":"svg","assetId":NIVEL4,"md5ext":NIVEL4+".svg","rotationCenterX":150,"rotationCenterY":60},
+   {"name":"N5","dataFormat":"svg","assetId":NIVEL5,"md5ext":NIVEL5+".svg","rotationCenterX":150,"rotationCenterY":60},
+ ],
+ "sounds":[],
+ "volume":100,"layerOrder":4,"visible":False,"x":0,"y":120,"size":100,"direction":90,
+ "draggable":False,"rotationStyle":"don't rotate",
+}
 
 def mon(vid,name,x,y,vis):
     return {"id":vid,"mode":"default","opcode":"data_variable","params":{"VARIABLE":name},
@@ -456,9 +514,9 @@ monitors=[
   mon(V_RECORD[1],V_RECORD[0],5,5,True),
 ]
 
-project={"targets":[stage,cobra,apple,press],"monitors":monitors,
+project={"targets":[stage,cobra,apple,press,nivel],"monitors":monitors,
          "extensions":[],"meta":{"semver":"3.0.0","vm":"0.2.0","agent":""}}
 
 json.dump(project, open(os.path.join(OUT,"project.json"),"w"), ensure_ascii=False)
-print("project.json written, blocks:",len(stb),len(ctb),len(atb),len(ptb))
+print("project.json written, blocks:",len(stb),len(ctb),len(atb),len(ptb),len(ntb))
 print("assets:",sorted(os.listdir(OUT)))

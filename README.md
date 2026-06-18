@@ -15,6 +15,8 @@ ou para o [TurboWarp](https://turbowarp.org)).
 | ⚡ **Velocidade por nível** | A variável `velocidade` é usada de verdade: sobe de 5 → 9 conforme o nível (5/10/15/20 pontos). |
 | 🔄 **Wrap-around nas 4 bordas** | Atravessa qualquer borda (cima, baixo, **esquerda e direita**) e reaparece do outro lado. Os limiares ficam dentro do *fence* de 15px do Scratch para disparar em todos os lados. |
 | 🍎 **Várias frutas** | Maçã 🍎 (+1), Banana 🍌 (+1), Uva 🍇 (+1), Cereja 🍒 (+2) e Estrela ⭐ (+3, bônus). Sorteadas a cada respawn. |
+| 👅 **Língua animada** | A cabeça pisca a linguinha bífida para dentro e para fora continuamente (3 frames em loop, em uma thread paralela). |
+| 🏁 **Troca de fase sem pausar** | A lógica de nível roda em uma thread paralela e um **banner "NÍVEL X"** anima por cima da tela — o jogo **não congela** mais na subida de nível. |
 | 🎨 **Cenários e atores Pró** | Novo fundo de jogo (grama xadrez + vinheta + moldura neon), menu repaginado e cobra "neon" vetorial com profundidade (cabeça laranja + corpo em degradê âmbar → rosa). |
 | 🏆 **Recorde** | Guarda a maior pontuação da sessão, exibida no menu e no game over. |
 
@@ -36,3 +38,9 @@ O resultado foi validado com o `scratch-parser` oficial e carregado/executado no
 ![Jogo](./assets_preview/bg.png)
 
 ![Cobra](./assets_preview/snake.png) ![Frutas](./assets_preview/fruits.png)
+
+Língua (in / meio / fora) e banners de nível:
+
+![Lingua](./assets_preview/tongue.png)
+
+![Niveis](./assets_preview/levels.png)

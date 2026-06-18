@@ -9,13 +9,9 @@ Palco: x [-240,240], y [-180,180].
 
 STAGE_W, STAGE_H = 480, 360
 
-# Superfície do chão (topo do piso marrom). Os personagens andam sobre y = -120.
+# Superfície do chão (topo do piso). Os personagens andam sobre y = -120.
 GROUND_Y = -120
-
-# Geometria ÚNICA para todas as fases (mecânica idêntica; muda só a arte).
-# Alturas baixas o suficiente para o pulo (JUMP=13) limpar com folga.
-OBST_A = {"cx": -28, "w": 26, "h": 42}     # pedestal 1
-OBST_B = {"cx": 96, "w": 26, "h": 48}      # pedestal 2 (parede mais alta)
+GY = GROUND_Y
 
 # Posições de início (logo acima do chão; a gravidade assenta).
 SPAWN_THEO = (-205, -90)
@@ -23,7 +19,7 @@ SPAWN_LIA = (-171, -90)
 
 # Constantes de física do platformer.
 WALK = 4
-JUMP = 13
+JUMP = 14
 GRAV = 1
 VY_MIN = -12
 PLAYER_XMIN = -232
@@ -36,26 +32,39 @@ DOOR_LIA = (214, -100)
 # Deslocamento vertical para o item "pousar" sobre a superfície (sobe do centro).
 ITEM_RISE = 16
 
-# Posições de exibição dos 4 coletáveis (constantes em todas as fases).
-ITEM_POS = [
-    (-138, GROUND_Y + ITEM_RISE),
-    (OBST_A["cx"], GROUND_Y + OBST_A["h"] + ITEM_RISE),
-    (38, GROUND_Y + ITEM_RISE),
-    (OBST_B["cx"], GROUND_Y + OBST_B["h"] + ITEM_RISE),
-]
+# Até 3 obstáculos por fase (slots de colisão).
+MAX_OBST = 3
 
 
-def _layout(hA=None, hB=None):
-    A, B = OBST_A, OBST_B
-    topA = GROUND_Y + A["h"]
-    topB = GROUND_Y + B["h"]
-    items = [
-        (-138, GROUND_Y),   # 1 - no chão, antes do 1º obstáculo
-        (A["cx"], topA),    # 2 - no topo do pedestal 1
-        (38, GROUND_Y),     # 3 - no chão, entre os obstáculos
-        (B["cx"], topB),    # 4 - no topo do pedestal 2
-    ]
-    return {"obstacles": [A, B], "items": items}
+def _ob(cx, w, h, kind):
+    return {"cx": cx, "w": w, "h": h, "kind": kind,
+            "x0": cx - w / 2, "x1": cx + w / 2, "top": GY + h}
+
+
+# LAYOUTS estilo Super Mario Bros - posições MUDAM a cada fase (tudo solucionável:
+# obstáculos com altura <= 52 (o pulo limpa) e itens no chão ou no topo deles).
+# kind: "pipe" (cano verde) | "blocks" (tijolos + bloco-?).
+LAYOUTS = {
+    1: {"obstacles": [_ob(-40, 36, 44, "pipe"), _ob(72, 34, 50, "blocks")],
+        "items": [(-135, GY), (-40, GY + 44), (20, GY), (72, GY + 50)]},
+    2: {"obstacles": [_ob(-78, 34, 40, "blocks"), _ob(30, 36, 50, "pipe"), _ob(124, 34, 44, "blocks")],
+        "items": [(-150, GY), (-78, GY + 40), (30, GY + 50), (124, GY + 44)]},
+    3: {"obstacles": [_ob(-62, 36, 48, "pipe"), _ob(66, 34, 44, "blocks")],
+        "items": [(-140, GY), (-62, GY + 48), (12, GY), (66, GY + 44)]},
+    4: {"obstacles": [_ob(-32, 34, 46, "blocks"), _ob(54, 36, 52, "pipe"), _ob(134, 34, 40, "blocks")],
+        "items": [(-150, GY), (-32, GY + 46), (54, GY + 52), (134, GY + 40)]},
+    5: {"obstacles": [_ob(-52, 36, 50, "pipe"), _ob(42, 34, 44, "blocks"), _ob(126, 36, 48, "pipe")],
+        "items": [(-146, GY), (-52, GY + 50), (42, GY + 44), (126, GY + 48)]},
+}
+
+
+def obstacles(num):  return LAYOUTS[num]["obstacles"]
+def items(num):      return LAYOUTS[num]["items"]
+
+
+def _layout(*a, **k):   # compat: PHASES ainda traz a chave "layout" (não usada)
+    return None
+
 
 
 # --------------------------------------------------------------------------

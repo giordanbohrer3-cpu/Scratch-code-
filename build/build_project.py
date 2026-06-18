@@ -11,23 +11,24 @@ Plataforma estilo Fogo & Água / Mario:
 from sb3lib import *
 import art_backdrops, art_intro, art_floor, art_items, art_chars, art_doors, art_ui, art_fx
 from phases import (PHASES, GROUND_Y, SPAWN_THEO, SPAWN_LIA, DOOR_THEO, DOOR_LIA,
-                    ITEM_POS, WALK, JUMP, GRAV, VY_MIN, PLAYER_XMIN, PLAYER_XMAX,
-                    OBST_A, OBST_B)
+                    WALK, JUMP, GRAV, VY_MIN, PLAYER_XMIN, PLAYER_XMAX,
+                    LAYOUTS, obstacles, items, MAX_OBST, ITEM_RISE, ASTRO_POS)
 
 # ---- Geometria de colisão (em coordenadas do Scratch) ----------------------
-# A colisão é por matemática (retângulos), e a arte marrom (Chão/Obstáculo) é
-# desenhada exatamente sobre esses retângulos. Mais robusto que "tocando em".
+# Colisão por matemática (retângulos). Cada fase tem ATÉ 3 obstáculos cujas
+# coordenadas o Diretor grava em variáveis (mudam por fase). A arte (Chão/
+# Obstáculo) é desenhada exatamente sobre esses retângulos.
 GY = GROUND_Y                 # topo do chão (superfície)
 FOOT = 26                     # distância do centro do personagem até os pés
 HW = 12                       # meia-largura do corpo
-A_X0 = OBST_A["cx"] - OBST_A["w"] / 2   # obstáculo 1
-A_X1 = OBST_A["cx"] + OBST_A["w"] / 2
-A_TOP = GY + OBST_A["h"]
-B_X0 = OBST_B["cx"] - OBST_B["w"] / 2   # obstáculo 2
-B_X1 = OBST_B["cx"] + OBST_B["w"] / 2
-B_TOP = GY + OBST_B["h"]
 EXIT_X = 176                  # zona dos portais (fim da fase)
-ITEM_R2 = 26 * 26             # raio² de coleta
+ITEM_R2 = 40 * 40             # raio² de coleta (pega ao pular por cima)
+# variáveis dos 3 slots de obstáculo: (x0, x1, topo)
+OBV = [("o1x0", "o1x1", "o1t"), ("o2x0", "o2x1", "o2t"), ("o3x0", "o3x1", "o3t")]
+
+
+def ov_xv(x0v, x1v):          # corpo do jogador cruza a faixa [x0,x1] (variáveis)?
+    return and_(gt(add(xpos(), HW), var(x0v)), lt(sub(xpos(), HW), var(x1v)))
 
 
 def intro_name(p): return f"Intro {p['num']} - {p['title']}"
@@ -53,7 +54,8 @@ def build():
     for v in ["fase", "modo", "Pontos", "Relíquias",
               "item1", "item2", "item3", "item4", "Theo_ok", "Lia_ok", "intro_n",
               "vy_theo", "no_theo", "passo_theo", "dx_theo", "pf_theo", "sf_theo",
-              "vy_lia", "no_lia", "passo_lia", "dx_lia", "pf_lia", "sf_lia"]:
+              "vy_lia", "no_lia", "passo_lia", "dx_lia", "pf_lia", "sf_lia",
+              "o1x0", "o1x1", "o1t", "o2x0", "o2x1", "o2t", "o3x0", "o3x1", "o3t"]:
         P.add_var(v, 0)
     # ---- broadcasts ----
     for m in ["comecar", "carregar_fase", "jogar", "entrar_porta",
@@ -131,25 +133,31 @@ def build():
     # =====================================================================
     # OBJETOS COLETÁVEIS (4 sprites, 5 costumes cada)
     # =====================================================================
+    def near(who):   # distância² do jogador até a posição ATUAL do item
+        return lt(add(sq(sub(of_("x position", who), xpos())),
+                      sq(sub(of_("y position", who), ypos()))), ITEM_R2)
+
     for slot in range(1, 5):
         ob = Target(f"Objeto{slot}")
         for name, svg in art_items.items_for_slot(slot):
             ob.add_costume(name, svg, 24, 24)
-        ix, iy = ITEM_POS[slot - 1]
-        ob.x, ob.y, ob.layer = ix, iy, 6 + slot
+        ix0, surf0 = items(1)[slot - 1]
+        ob.x, ob.y, ob.layer = ix0, surf0 + ITEM_RISE, 6 + slot
         ob.visible = False
         itemvar = f"item{slot}"
-        # distância² do item até cada jogador (usa "[x] de [sprite]")
-        def near(who):
-            return lt(add(sq(sub(of_("x position", who), ix)),
-                          sq(sub(of_("y position", who), iy))), ITEM_R2)
+        # posição por fase (no chão ou no topo do obstáculo) + leve flutuação
+        pos_chain = [if_(eq(var("fase"), n),
+                         [goto_xy(items(n)[slot - 1][0],
+                                  add(items(n)[slot - 1][1] + ITEM_RISE,
+                                      mul(4, mathop("sin", mul(timer(), 170)))))])
+                     for n in range(1, 6)]
         ob.script(
             on_flag(), hide(), set_size(100), clear_effects(),
             forever([
                 if_else(and_(playing(), in_phase()), [
                     switch_costume(var("fase")),
                     if_else(eq(var(itemvar), 0), [
-                        goto_xy(ix, add(iy, mul(4, mathop("sin", mul(timer(), 170))))),
+                        *pos_chain,
                         show(),
                         if_(or_(near("Theo"), near("Lia")), [
                             set_var(itemvar, 1),
@@ -203,24 +211,19 @@ def build():
                     if_(gt(xpos(), PLAYER_XMAX), [set_x(PLAYER_XMAX)]),
                     if_(lt(xpos(), PLAYER_XMIN), [set_x(PLAYER_XMIN)]),
                     # bloqueio lateral pelos obstáculos (só se os pés estão abaixo do topo)
-                    if_(and_(overlap_x(A_X0, A_X1), lt(feet, A_TOP - 2)), [
-                        if_(gt(var(dx), 0), [set_x(A_X0 - HW)]),
-                        if_(lt(var(dx), 0), [set_x(A_X1 + HW)]),
-                    ]),
-                    if_(and_(overlap_x(B_X0, B_X1), lt(feet, B_TOP - 2)), [
-                        if_(gt(var(dx), 0), [set_x(B_X0 - HW)]),
-                        if_(lt(var(dx), 0), [set_x(B_X1 + HW)]),
-                    ]),
+                    *[if_(and_(ov_xv(x0, x1), lt(feet, sub(var(t), 2))), [
+                        if_(gt(var(dx), 0), [set_x(sub(var(x0), HW))]),
+                        if_(lt(var(dx), 0), [set_x(add(var(x1), HW))]),
+                    ]) for (x0, x1, t) in OBV],
                     # ---------- VERTICAL / GRAVIDADE ----------
                     set_var(pf, feet),                       # pés antes de cair
                     change_var(vy, -GRAV),
                     if_(lt(var(vy), VY_MIN), [set_var(vy, VY_MIN)]),
                     change_y(var(vy)),
                     set_var(sf, GY),                         # superfície sob o jogador
-                    if_(and_(overlap_x(A_X0, A_X1), ge(var(pf), A_TOP - 2)),
-                        [if_(gt(A_TOP, var(sf)), [set_var(sf, A_TOP)])]),
-                    if_(and_(overlap_x(B_X0, B_X1), ge(var(pf), B_TOP - 2)),
-                        [if_(gt(B_TOP, var(sf)), [set_var(sf, B_TOP)])]),
+                    *[if_(and_(ov_xv(x0, x1), ge(var(pf), sub(var(t), 2))),
+                          [if_(gt(var(t), var(sf)), [set_var(sf, var(t))])])
+                      for (x0, x1, t) in OBV],
                     if_else(le(feet, var(sf)), [
                         set_y(add(var(sf), FOOT)),
                         if_(le(var(vy), 0), [set_var(no, 1)]),
@@ -382,7 +385,6 @@ def build():
     # =====================================================================
     # ASTRO - elemento celeste animado no fundo (muda por era)
     # =====================================================================
-    from phases import ASTRO_POS
     astro = Target("Astro")
     for name, svg in art_fx.astro_all():
         astro.add_costume(name, svg, art_fx.AC, art_fx.AC)
@@ -400,7 +402,7 @@ def build():
             if_else(visible_phase(), [
                 switch_costume(var("fase")),
                 *pos_chain,
-                point_dir(pulse(90, 4, 35)),     # leve balanço
+                turn_right(0.6),                 # giro lento (arte em movimento)
                 set_size(pulse(102, 6, 80)),     # pulsa
                 show(),
             ], [hide()]),
@@ -426,8 +428,9 @@ def build():
         forever([
             if_else(visible_phase(), [
                 switch_costume(var("fase")), set_effect("ghost", 40), show(),
-                # deriva p/ esquerda com parallax (mais alto = mais rápido)
+                # deriva p/ esquerda com parallax (mais alto = mais rápido) + gira
                 change_x(sub(0, add(0.6, div(add(ypos(), 180), 220)))),
+                turn_right(2),
                 if_(lt(xpos(), -238), [set_x(238), set_y(rnd(-50, 150))]),
             ], [hide()]),
         ]),
@@ -470,6 +473,21 @@ def build():
              and_(eq(var("item3"), 1), eq(var("item4"), 1))),
         and_(eq(var("Theo_ok"), 1), eq(var("Lia_ok"), 1)))
 
+    def set_obstacles_chain():   # grava as coords dos obstáculos da fase atual
+        chain = []
+        for n in range(1, 6):
+            obs = obstacles(n)
+            stmts = []
+            for i in range(MAX_OBST):
+                x0n, x1n, tn = OBV[i]
+                if i < len(obs):
+                    o = obs[i]
+                    stmts += [set_var(x0n, o["x0"]), set_var(x1n, o["x1"]), set_var(tn, o["top"])]
+                else:   # slot vazio -> fora da tela (sem colisão)
+                    stmts += [set_var(x0n, 9999), set_var(x1n, 9999), set_var(tn, -999)]
+            chain.append(if_(eq(var("fase"), n), stmts))
+        return chain
+
     # init
     dirc.script(
         on_flag(),
@@ -507,6 +525,7 @@ def build():
         set_var("intro_n", 1), wait(1),
         set_var("intro_n", 0),
         *game_switch,
+        *set_obstacles_chain(),          # define os obstáculos da fase
         set_var("modo", 2), broadcast("jogar"),
     )
     # fase completa -> animações -> próxima

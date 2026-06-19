@@ -32,34 +32,68 @@ DOOR_LIA = (214, -100)
 # Deslocamento vertical para o item "pousar" sobre a superfície (sobe do centro).
 ITEM_RISE = 16
 
-# Até 3 obstáculos por fase (slots de colisão).
+# Até 3 obstáculos sólidos e 6 plataformas flutuantes por fase.
 MAX_OBST = 3
+MAX_PLAT = 6
+DOOR_DY = 18          # centro da porta acima da superfície em que se apoia
 
 
-def _ob(cx, w, h, kind):
+def _ob(cx, w, h, kind):   # obstáculo SÓLIDO (cano/blocos) - bloqueia e pousa
     return {"cx": cx, "w": w, "h": h, "kind": kind,
             "x0": cx - w / 2, "x1": cx + w / 2, "top": GY + h}
 
 
-# LAYOUTS estilo Super Mario Bros - posições MUDAM a cada fase (tudo solucionável:
-# obstáculos com altura <= 52 (o pulo limpa) e itens no chão ou no topo deles).
-# kind: "pipe" (cano verde) | "blocks" (tijolos + bloco-?).
-LAYOUTS = {
+def _pl(cx, top, w):       # plataforma flutuante (one-way: pousa por cima)
+    return {"cx": cx, "top": top, "w": w, "x0": cx - w / 2, "x1": cx + w / 2}
+
+
+def _door(cx, surf):       # porta apoiada numa superfície (centro = surf + DOOR_DY)
+    return (cx, surf + DOOR_DY)
+
+
+# LEVELS - estilo Fogo & Água: plataformas flutuantes, itens próprios de cada
+# personagem (Theo = itens 1,2 / Lia = itens 3,4) e portas separadas que só
+# liberam após coletar TODOS os itens. item = (cx, superfície_y).
+LEVELS = {
+    # Fase 1: ORIGINAL (chão Mario + cano/blocos, portas no chão à direita)
     1: {"obstacles": [_ob(-40, 36, 44, "pipe"), _ob(72, 34, 50, "blocks")],
-        "items": [(-135, GY), (-40, GY + 44), (20, GY), (72, GY + 50)]},
-    2: {"obstacles": [_ob(-78, 34, 40, "blocks"), _ob(30, 36, 50, "pipe"), _ob(124, 34, 44, "blocks")],
-        "items": [(-150, GY), (-78, GY + 40), (30, GY + 50), (124, GY + 44)]},
-    3: {"obstacles": [_ob(-62, 36, 48, "pipe"), _ob(66, 34, 44, "blocks")],
-        "items": [(-140, GY), (-62, GY + 48), (12, GY), (66, GY + 44)]},
-    4: {"obstacles": [_ob(-32, 34, 46, "blocks"), _ob(54, 36, 52, "pipe"), _ob(134, 34, 40, "blocks")],
-        "items": [(-150, GY), (-32, GY + 46), (54, GY + 52), (134, GY + 40)]},
-    5: {"obstacles": [_ob(-52, 36, 50, "pipe"), _ob(42, 34, 44, "blocks"), _ob(126, 36, 48, "pipe")],
-        "items": [(-146, GY), (-52, GY + 50), (42, GY + 44), (126, GY + 48)]},
+        "platforms": [],
+        "items": [(-135, GY), (-40, GY + 44), (20, GY), (72, GY + 50)],
+        "door_theo": _door(188, GY), "door_lia": _door(214, GY)},
+    # Fase 2: 3 plataformas (pilha vertical à direita); as DUAS portas na última
+    # (canto superior direito). Os jogadores andam até a base e sobem.
+    2: {"obstacles": [],
+        "platforms": [_pl(140, -54, 90), _pl(140, 8, 90), _pl(140, 68, 110)],
+        "items": [(120, -54), (120, 8), (160, -54), (160, 8)],
+        "door_theo": _door(118, 68), "door_lia": _door(164, 68)},
+    # Fase 3: 5 plataformas (pilha quase vertical p/ o meio-topo);
+    # porta Lia na última (meio-topo), porta Theo no chão (meio)
+    3: {"obstacles": [],
+        "platforms": [_pl(-30, -58, 84), _pl(-25, -6, 84), _pl(-20, 44, 84),
+                      _pl(-12, 92, 88), _pl(0, 132, 96)],
+        "items": [(-30, -58), (-25, -6), (-20, 44), (-12, 92)],
+        "door_theo": _door(0, GY), "door_lia": _door(0, 132)},
+    # Fase 4: porta Theo na largada (chão, canto inf. esq.); porta Lia em cima à
+    # direita (pilha vertical à direita). Itens do Theo numa pilha baixa à esq.
+    4: {"obstacles": [],
+        "platforms": [_pl(-58, -52, 84), _pl(-54, 10, 84),
+                      _pl(120, -52, 84), _pl(146, 12, 84), _pl(150, 74, 84)],
+        "items": [(-58, -52), (-54, 10), (120, -52), (146, 12)],
+        "door_theo": _door(-188, GY), "door_lia": _door(150, 74)},
+    # Fase 5: porta Theo no canto sup. ESQ. e porta Lia no canto sup. DIR. (pilhas verticais)
+    5: {"obstacles": [],
+        "platforms": [_pl(-130, -52, 82), _pl(-150, 14, 82), _pl(-150, 76, 86),
+                      _pl(130, -52, 82), _pl(150, 14, 82), _pl(150, 76, 86)],
+        "items": [(-130, -52), (-150, 14), (130, -52), (150, 14)],
+        "door_theo": _door(-150, 76), "door_lia": _door(150, 76)},
 }
 
 
-def obstacles(num):  return LAYOUTS[num]["obstacles"]
-def items(num):      return LAYOUTS[num]["items"]
+def obstacles(num):  return LEVELS[num]["obstacles"]
+def platforms(num):  return LEVELS[num]["platforms"]
+def items(num):      return LEVELS[num]["items"]
+def door_theo(num):  return LEVELS[num]["door_theo"]
+def door_lia(num):   return LEVELS[num]["door_lia"]
 
 
 def _layout(*a, **k):   # compat: PHASES ainda traz a chave "layout" (não usada)

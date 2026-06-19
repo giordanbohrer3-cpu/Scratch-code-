@@ -86,6 +86,36 @@ def confetti_all():
     return [(f"c{i}", confetti_costume(c)) for i, c in enumerate(CONFETTI_COLORS)]
 
 
+# ---- Cadeado (tranca das portas) ----
+PADW, PADH = 40, 50
+
+
+def _padlock(open_):
+    defs = radgrad("pglow", [(0, "#ffe9a8", 0.55), (1, "#ffe9a8", 0)])
+    b = [circle(20, 24, 20, "url(#pglow)")]
+    # arco (shackle)
+    if open_:
+        b.append(path("M11 22 L11 14 Q11 5 20 5 Q26 5 28 10", fill="none",
+                      stroke="#cdd2da", sw=5))   # arco aberto p/ um lado
+    else:
+        b.append(path("M11 22 L11 14 Q11 5 20 5 Q29 5 29 14 L29 22", fill="none",
+                      stroke="#cdd2da", sw=5))
+        b.append(path("M11 22 L11 14 Q11 5 20 5 Q29 5 29 14 L29 22", fill="none",
+                      stroke="#9aa0a8", sw=2, opacity=0.6))
+    # corpo
+    b.append(rect(8, 20, 24, 22, "#f2c14e", rx=5))
+    b.append(rect(8, 20, 24, 5, "#ffe08a", rx=5, opacity=0.9))
+    b.append(rect(8, 20, 24, 22, "none", rx=5, stroke="#7a5a1e", sw=2))
+    # buraco da chave
+    b.append(circle(20, 29, 3.2, "#6b4e1e"))
+    b.append(poly([(18.5, 31), (21.5, 31), (22.5, 38), (17.5, 38)], "#6b4e1e"))
+    return svg_doc(PADW, PADH, "".join(b), defs)
+
+
+def padlock_all():
+    return [("fechado", _padlock(False)), ("aberto", _padlock(True))]
+
+
 # ---- Ponto invisivel (Diretor) ----
 def dot_costume():
     return svg_doc(8, 8, rect(0, 0, 8, 8, "#000000", opacity=0))

@@ -5,7 +5,7 @@
 A colisão é por matemática (retângulos), desenhada exatamente sobre a arte.
 """
 from svg_core import *
-from phases import LAYOUTS, obstacles
+from phases import obstacles, platforms
 
 W, H = 480, 360
 G = 300                    # topo do chão em SVG (= scratch y -120)
@@ -115,12 +115,34 @@ def _blocks(cxs, w, h):
     return "".join(s)
 
 
+# ---- plataforma flutuante (igual ao chão: bloquinhos de terra Mario) ----
+def _platform(cxs, top_scratch, w):
+    y = 180 - top_scratch             # topo da plataforma em SVG
+    th = 18
+    x0 = cxs - w / 2
+    s = [rect(x0, y, w, th, GR_D, rx=3)]                       # sombra/base
+    n = max(1, int(round(w / 26)))
+    bw = w / n
+    for i in range(n):
+        bx = x0 + i * bw
+        s.append(rect(bx, y, bw, th, GR, rx=2 if (i == 0 or i == n - 1) else 0))
+        s.append(rect(bx, y, bw, 3, GR_HI, opacity=0.9))
+        s.append(rect(bx, y + th - 3, bw, 3, GR_D, opacity=0.5))
+        s.append(rect(bx, y, bw, th, "none", stroke=GR_O, sw=1.3))
+        s.append(rect(bx + 3, y + 4, 2.5, 2.5, GR_O))          # entalhe
+        s.append(rect(bx + bw - 5, y + 4, 2.5, 2.5, GR_O))
+    s.append(rect(x0, y - 2, w, 3, GR_HI, opacity=0.8))        # brilho do topo
+    return "".join(s)
+
+
 def obstacle_costume(num):
     b = []
     for o in obstacles(num):
         cxs = sx(o["cx"])
         b.append(_pipe(cxs, o["w"], o["h"]) if o["kind"] == "pipe"
                  else _blocks(cxs, o["w"], o["h"]))
+    for p in platforms(num):
+        b.append(_platform(sx(p["cx"]), p["top"], p["w"]))
     return svg_doc(W, H, "".join(b))
 
 

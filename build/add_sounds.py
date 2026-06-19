@@ -26,20 +26,22 @@ musica = Target("Musica")
 musica.add_costume("dot", dot, 4, 4)
 musica.add_sound("musica", *snd["musica"])
 musica.visible = False
-musica.script(                          # toca em loop, baixinho e imersivo
-    on_flag(), set_volume(55),
+musica.script(                          # toca em loop, baixinho, lento e imersivo
+    on_flag(), set_volume(48),
     forever([play_sound_until_done("musica")]),
 )
 
 # ------------------------------------------------------------------ SFX ------
 som = Target("Som")
 som.add_costume("dot", dot, 4, 4)
-for nm in ["clique", "coletar", "pulo", "passo", "destravar", "festa"]:
+for nm in ["clique", "coletar", "pulo", "passo", "destravar", "fase", "festa"]:
     som.add_sound(nm, *snd[nm])
 som.visible = False
 
 # clicar em Jogar (o botão verde dispara "comecar")
 som.script(on_broadcast("comecar"), play_sound("clique"))
+# passar de fase (o banner "FASE COMPLETA!" dispara "banner_fim")
+som.script(on_broadcast("banner_fim"), play_sound("fase"))
 # festa/confete ao zerar (broadcast "vitoria")
 som.script(on_broadcast("vitoria"), play_sound("festa"))
 # coletar cada item (item vira 1 quando o dono pega; reseta a 0 na próxima fase)
@@ -61,7 +63,7 @@ walking = or_(and_(not_(eq(var("dx_theo"), 0)), eq(var("no_theo"), 1)),
               and_(not_(eq(var("dx_lia"), 0)), eq(var("no_lia"), 1)))
 som.script(on_flag(), forever([
     if_else(and_(eq(var("modo"), 2), walking),
-            [play_sound("passo"), wait(0.3)],
+            [play_sound("passo"), wait(0.34)],
             [wait(0.05)]),
 ]))
 

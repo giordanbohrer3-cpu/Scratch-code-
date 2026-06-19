@@ -42,26 +42,27 @@ def add(out, seg, st):
 
 
 # --------------------------------------------------------------------------
-def music():           # ~16s calmo e imersivo (C - G - Am - F em loop)
+def music():           # ~24s calmo, lento e imersivo (C - G - Am - F em loop)
     prog = [(48, [0, 4, 7]), (43, [0, 4, 7]), (45, [0, 3, 7]), (41, [0, 4, 7])]
-    cd = 4.0
+    cd = 6.0                                              # mais lento: 6s por acorde
     out = np.zeros(int(cd * 4 * RATE)); pos = 0
     for root, ints in prog:
         n = int(cd * RATE); t = np.arange(n) / RATE; seg = np.zeros(n)
-        for iv in ints:                                   # pad com leve detune
+        for iv in ints:                                   # pad suave com leve detune
             f = midi(root + iv)
-            seg += 0.10 * np.sin(2 * np.pi * (f - 0.4) * t)
-            seg += 0.10 * np.sin(2 * np.pi * (f + 0.4) * t)
-            seg += 0.05 * np.sin(2 * np.pi * midi(root + iv + 12) * t)
-        pe = np.minimum(1, np.linspace(0, 1, n) * 3) * np.minimum(1, np.linspace(1, 0, n) * 4 + 0.25)
-        seg *= pe * 0.6
-        seg += 0.16 * np.sin(2 * np.pi * midi(root - 12) * t) * np.exp(-1.3 * t)   # baixo
+            seg += 0.085 * np.sin(2 * np.pi * (f - 0.35) * t)
+            seg += 0.085 * np.sin(2 * np.pi * (f + 0.35) * t)
+            seg += 0.04 * np.sin(2 * np.pi * midi(root + iv + 12) * t)
+        pe = np.minimum(1, np.linspace(0, 1, n) * 2.2) * np.minimum(1, np.linspace(1, 0, n) * 5 + 0.3)
+        seg *= pe * 0.55
+        seg += 0.13 * np.sin(2 * np.pi * midi(root - 12) * t) * np.exp(-0.8 * t)   # baixo suave
+        # arpejo: 4 notas espaçadas (1.5s), arredondadas (sustain maior)
         arp = [root + 12 + ints[0], root + 12 + ints[1], root + 12 + ints[2], root + 24 + ints[0]]
-        for k in range(8):                                # arpejo de sininhos
-            add(seg, bell(midi(arp[k % 4]), 0.62, 0.30, 5), int(k * (cd / 8) * RATE))
+        for k in range(4):
+            add(seg, bell(midi(arp[k]), 1.4, 0.22, 3.0), int(k * (cd / 4) * RATE))
         add(out, seg, pos); pos += n
-    out *= 0.62 / np.max(np.abs(out))
-    f = int(0.02 * RATE); out[:f] *= np.linspace(0, 1, f); out[-f:] *= np.linspace(1, 0, f)
+    out *= 0.55 / np.max(np.abs(out))
+    f = int(0.03 * RATE); out[:f] *= np.linspace(0, 1, f); out[-f:] *= np.linspace(1, 0, f)
     return to_wav(out)
 
 
@@ -85,12 +86,20 @@ def jump():            # pulo (sweep ascendente)
     return to_wav(0.34 * s * ar(len(t), 0.002, 0.03))
 
 
-def step():            # passo (suave)
-    t = tarr(0.06); rs = np.random.RandomState(2)
-    nz = np.convolve(rs.randn(len(t)), np.ones(18) / 18, mode='same')
-    s = nz * np.exp(-38 * t) + 0.25 * np.sin(2 * np.pi * 120 * t) * np.exp(-45 * t)
-    s *= ar(len(t), 0.001, 0.01)
-    return to_wav(0.22 * s / (np.max(np.abs(s)) + 1e-9))
+def step():            # passo (bem suave)
+    t = tarr(0.055); rs = np.random.RandomState(2)
+    nz = np.convolve(rs.randn(len(t)), np.ones(22) / 22, mode='same')
+    s = nz * np.exp(-42 * t) + 0.20 * np.sin(2 * np.pi * 110 * t) * np.exp(-48 * t)
+    s *= ar(len(t), 0.001, 0.012)
+    return to_wav(0.13 * s / (np.max(np.abs(s)) + 1e-9))
+
+
+def phase():           # passar de fase (flourish curto e alegre)
+    out = np.zeros(int(0.62 * RATE))
+    for i, nn in enumerate([79, 84, 88]):                 # G5 - C6 - E6 (subida)
+        add(out, bell(midi(nn), 0.45, 0.45, 5), int(i * 0.085 * RATE))
+    add(out, bell(midi(91), 0.4, 0.22, 8), int(0.27 * RATE))   # brilho final (G6)
+    return to_wav(0.82 * out / np.max(np.abs(out)))
 
 
 def unlock():          # destravar porta (clack + chime subindo)
@@ -121,7 +130,8 @@ def party():           # festa/confete ao zerar
 
 def all_sounds():
     return {"musica": music(), "clique": click(), "coletar": collect(),
-            "pulo": jump(), "passo": step(), "destravar": unlock(), "festa": party()}
+            "pulo": jump(), "passo": step(), "destravar": unlock(),
+            "fase": phase(), "festa": party()}
 
 
 if __name__ == "__main__":

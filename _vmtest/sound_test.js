@@ -58,6 +58,11 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await sleep(400);
   check(plays['destravar'] > 0, 'som ao destravar as portas');
 
+  // passar de fase (banner "FASE COMPLETA!")
+  vm.runtime.startHats('event_whenbroadcastreceived', { BROADCAST_OPTION: 'banner_fim' });
+  await sleep(300);
+  check(plays['fase'] > 0, 'som ao passar de fase');
+
   // festa ao zerar
   vm.runtime.startHats('event_whenbroadcastreceived', { BROADCAST_OPTION: 'vitoria' });
   await sleep(300);

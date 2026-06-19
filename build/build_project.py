@@ -629,8 +629,12 @@ def _monitor(P, name, x, y):
 
 
 if __name__ == "__main__":
+    import os, sys
     proj = build()
-    out = "/home/user/Scratch-code-/Dupla_das_Artes.sb3"
+    # caminho de saída relativo à raiz do repositório (pasta acima de build/),
+    # ou o 1º argumento da linha de comando -> funciona em qualquer clone.
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(repo_root, "Dupla_das_Artes.sb3")
     data = proj.write_sb3(out)
     n_blocks = sum(len(t["blocks"]) for t in data["targets"])
     print(f"OK -> {out}")

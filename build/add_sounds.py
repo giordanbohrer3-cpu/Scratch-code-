@@ -6,15 +6,16 @@ jogo e tocam os sons. Nenhum sprite/bloco/fantasia/backdrop existente é alterad
 
 Uso: python3 add_sounds.py entrada.sb3 saida.sb3
 """
-import sys, json, zipfile
+import sys, os, json, zipfile
 from sb3lib import (Project, Target, on_flag, on_broadcast, forever, wait, wait_until,
                     if_else, play_sound, play_sound_until_done, set_volume,
                     var, eq, gt, lt, ge, and_, or_, not_)
 import gen_sounds
 import art_ui
 
-IN = sys.argv[1] if len(sys.argv) > 1 else "in.sb3"
-OUT = sys.argv[2] if len(sys.argv) > 2 else "/home/user/Scratch-code-/Dupla_das_Artes.sb3"
+_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+IN = sys.argv[1] if len(sys.argv) > 1 else os.path.join(_REPO, "in.sb3")
+OUT = sys.argv[2] if len(sys.argv) > 2 else os.path.join(_REPO, "Dupla_das_Artes.sb3")
 
 snd = gen_sounds.all_sounds()
 dot = art_ui.dot_costume()

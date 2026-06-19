@@ -126,7 +126,9 @@ def all_sounds():
 
 if __name__ == "__main__":
     import os
-    os.makedirs("/home/user/Scratch-code-/preview/snd", exist_ok=True)
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    out_dir = os.path.join(repo_root, "preview", "snd")
+    os.makedirs(out_dir, exist_ok=True)
     for name, (data, rate, sc) in all_sounds().items():
-        open(f"/home/user/Scratch-code-/preview/snd/{name}.wav", "wb").write(data)
+        open(os.path.join(out_dir, f"{name}.wav"), "wb").write(data)
         print(f"{name}: {sc} samples, {sc/rate:.2f}s, {len(data)} bytes")

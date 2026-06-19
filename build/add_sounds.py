@@ -34,12 +34,14 @@ musica.script(                          # toca em loop, baixinho, lento e imersi
 # ------------------------------------------------------------------ SFX ------
 som = Target("Som")
 som.add_costume("dot", dot, 4, 4)
-for nm in ["clique", "coletar", "pulo", "passo", "destravar", "fase", "festa"]:
+for nm in ["clique", "coletar", "pulo", "passo", "porta", "destravar", "fase", "festa"]:
     som.add_sound(nm, *snd[nm])
 som.visible = False
 
 # clicar em Jogar (o botão verde dispara "comecar")
 som.script(on_broadcast("comecar"), play_sound("clique"))
+# entrar nas portas (os dois chegam ao portal -> "entrar_porta", antes do banner)
+som.script(on_broadcast("entrar_porta"), play_sound("porta"))
 # passar de fase (o banner "FASE COMPLETA!" dispara "banner_fim")
 som.script(on_broadcast("banner_fim"), play_sound("fase"))
 # festa/confete ao zerar (broadcast "vitoria")

@@ -58,6 +58,11 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await sleep(400);
   check(plays['destravar'] > 0, 'som ao destravar as portas');
 
+  // entrar nas portas (os dois chegam ao portal)
+  vm.runtime.startHats('event_whenbroadcastreceived', { BROADCAST_OPTION: 'entrar_porta' });
+  await sleep(300);
+  check(plays['porta'] > 0, 'som ao entrar nas portas');
+
   // passar de fase (banner "FASE COMPLETA!")
   vm.runtime.startHats('event_whenbroadcastreceived', { BROADCAST_OPTION: 'banner_fim' });
   await sleep(300);

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-"""gen_sounds.py - sintetiza os efeitos sonoros e a música (WAV 22050 Hz, 16-bit
-mono) de forma procedural (sem direitos autorais). Devolve dict nome->(bytes,
-rate, sampleCount)."""
+"""gen_sounds.py - sintetiza música e efeitos (WAV 22050 Hz, 16-bit mono) de
+forma procedural (sem direitos autorais), com cara de jogo de plataforma
+divertido e imersivo. Devolve dict nome->(bytes, rate, sampleCount)."""
 import numpy as np, io, wave
 
 RATE = 22050
@@ -22,9 +22,14 @@ def midi(n):   return 440.0 * 2 ** ((n - 69) / 12.0)
 
 def ar(n, a=0.004, r=0.04):
     e = np.ones(n); ai = max(1, int(a * RATE)); ri = max(1, int(r * RATE))
-    e[:ai] = np.linspace(0, 1, ai)
-    e[-ri:] *= np.linspace(1, 0, ri)
+    e[:ai] = np.linspace(0, 1, ai); e[-ri:] *= np.linspace(1, 0, ri)
     return e
+
+
+def add(out, seg, st):
+    e = min(len(seg), len(out) - st)
+    if e > 0:
+        out[st:st + e] += seg[:e]
 
 
 def bell(freq, dur, amp=0.5, decay=6.0):
@@ -35,34 +40,77 @@ def bell(freq, dur, amp=0.5, decay=6.0):
     return amp * s / 1.72
 
 
-def add(out, seg, st):
-    e = min(len(seg), len(out) - st)
-    if e > 0:
-        out[st:st + e] += seg[:e]
+# ---- osciladores chiptune ----
+def sq(freq, t, duty=0.5):  return np.where(((freq * t) % 1.0) < duty, 1.0, -1.0)
+def tri(freq, t):           return 2.0 / np.pi * np.arcsin(np.sin(2 * np.pi * freq * t))
 
 
-# --------------------------------------------------------------------------
-def music():           # ~24s calmo, lento e imersivo (C - G - Am - F em loop)
-    prog = [(48, [0, 4, 7]), (43, [0, 4, 7]), (45, [0, 3, 7]), (41, [0, 4, 7])]
-    cd = 6.0                                              # mais lento: 6s por acorde
-    out = np.zeros(int(cd * 4 * RATE)); pos = 0
-    for root, ints in prog:
-        n = int(cd * RATE); t = np.arange(n) / RATE; seg = np.zeros(n)
-        for iv in ints:                                   # pad suave com leve detune
-            f = midi(root + iv)
-            seg += 0.085 * np.sin(2 * np.pi * (f - 0.35) * t)
-            seg += 0.085 * np.sin(2 * np.pi * (f + 0.35) * t)
-            seg += 0.04 * np.sin(2 * np.pi * midi(root + iv + 12) * t)
-        pe = np.minimum(1, np.linspace(0, 1, n) * 2.2) * np.minimum(1, np.linspace(1, 0, n) * 5 + 0.3)
-        seg *= pe * 0.55
-        seg += 0.13 * np.sin(2 * np.pi * midi(root - 12) * t) * np.exp(-0.8 * t)   # baixo suave
-        # arpejo: 4 notas espaçadas (1.5s), arredondadas (sustain maior)
-        arp = [root + 12 + ints[0], root + 12 + ints[1], root + 12 + ints[2], root + 24 + ints[0]]
-        for k in range(4):
-            add(seg, bell(midi(arp[k]), 1.4, 0.22, 3.0), int(k * (cd / 4) * RATE))
-        add(out, seg, pos); pos += n
-    out *= 0.55 / np.max(np.abs(out))
-    f = int(0.03 * RATE); out[:f] *= np.linspace(0, 1, f); out[-f:] *= np.linspace(1, 0, f)
+def lead(freq, dur, amp=0.16, duty=0.5):
+    t = tarr(dur)
+    return amp * sq(freq, t, duty) * ar(len(t), 0.004, 0.03) * np.exp(-1.4 * t)
+
+
+def bass(freq, dur, amp=0.24):
+    t = tarr(dur)
+    return amp * tri(freq, t) * ar(len(t), 0.004, 0.02) * np.exp(-1.0 * t)
+
+
+def kick():
+    t = tarr(0.13); f = np.linspace(150, 48, len(t))
+    return 0.7 * np.sin(2 * np.pi * f * t) * np.exp(-16 * t)
+
+
+def snare():
+    t = tarr(0.13); rs = np.random.RandomState(7)
+    return 0.35 * rs.randn(len(t)) * np.exp(-26 * t) + 0.2 * np.sin(2 * np.pi * 190 * t) * np.exp(-30 * t)
+
+
+def hat():
+    t = tarr(0.03); rs = np.random.RandomState(11)
+    return 0.16 * rs.randn(len(t)) * np.exp(-120 * t)
+
+
+def sweep(f0, f1, dur, square=False):
+    t = tarr(dur); f = np.linspace(f0, f1, len(t))
+    ph = 2 * np.pi * np.cumsum(f) / RATE
+    return (np.sign(np.sin(ph)) if square else np.sin(ph)), t
+
+
+# ==========================================================================
+def music():           # chiptune divertido e imersivo (8 compassos, ~14.5s)
+    bpm = 132; beat = 60.0 / bpm; eg = beat / 2
+    prog = [(48, [0, 4, 7]), (43, [0, 4, 7]), (45, [0, 3, 7]), (41, [0, 4, 7]),
+            (48, [0, 4, 7]), (43, [0, 4, 7]), (45, [0, 3, 7]), (41, [0, 4, 7])]
+    barlen = 8 * eg
+    out = np.zeros(int(len(prog) * barlen * RATE) + RATE)
+    for bi, (r, iv) in enumerate(prog):
+        b0 = bi * barlen
+        # pad de acorde (warmth)
+        tb = tarr(barlen); pad = np.zeros(len(tb))
+        for iv2 in iv:
+            pad += 0.05 * tri(midi(r + 12 + iv2), tb)
+        pad *= ar(len(tb), 0.02, 0.1)
+        add(out, pad, int(b0 * RATE))
+        # melodia (lead quadrada, arpejo sobe-desce na 5ª oitava)
+        mel = [r + 24 + iv[0], r + 24 + iv[1], r + 24 + iv[2], r + 36 + iv[0],
+               r + 24 + iv[2], r + 24 + iv[1], r + 24 + iv[0], None]
+        for k, nn in enumerate(mel):
+            if nn is not None:
+                add(out, lead(midi(nn), eg * 0.95, 0.16), int((b0 + k * eg) * RATE))
+        # baixo (triângulo): tônica - 5ª - oitava - 5ª
+        bp = [r, None, r + 7, None, r + 12, None, r + 7, None]
+        for k, nn in enumerate(bp):
+            if nn is not None:
+                add(out, bass(midi(nn), eg * 1.9, 0.24), int((b0 + k * eg) * RATE))
+        # bateria
+        for k in range(8):
+            tp = int((b0 + k * eg) * RATE)
+            add(out, hat() * 0.5, tp)
+            if k in (0, 4): add(out, kick(), tp)
+            if k in (2, 6): add(out, snare() * 0.7, tp)
+    out = out[:int(len(prog) * barlen * RATE)]
+    out *= 0.72 / np.max(np.abs(out))
+    f = int(0.004 * RATE); out[:f] *= np.linspace(0, 1, f); out[-f:] *= np.linspace(1, 0, f)
     return to_wav(out)
 
 
@@ -80,26 +128,30 @@ def collect():         # coletar item (arpejo brilhante E5 G5 C6)
     return to_wav(0.85 * out / np.max(np.abs(out)))
 
 
-def jump():            # pulo (sweep ascendente)
+def jump():            # pulo (sweep ascendente, "boing")
     t = tarr(0.17); f = np.linspace(320, 700, len(t))
     s = (np.sin(2 * np.pi * f * t) + 0.3 * np.sin(2 * np.pi * 2 * f * t)) * np.exp(-7 * t)
     return to_wav(0.34 * s * ar(len(t), 0.002, 0.03))
 
 
-def step():            # passo (bem suave)
-    t = tarr(0.055); rs = np.random.RandomState(2)
-    nz = np.convolve(rs.randn(len(t)), np.ones(22) / 22, mode='same')
-    s = nz * np.exp(-42 * t) + 0.20 * np.sin(2 * np.pi * 110 * t) * np.exp(-48 * t)
-    s *= ar(len(t), 0.001, 0.012)
-    return to_wav(0.13 * s / (np.max(np.abs(s)) + 1e-9))
+def step():            # passo: "tap" curto, redondo e natural (não-ruidoso)
+    t = tarr(0.05)
+    body = (np.sin(2 * np.pi * 230 * t) + 0.4 * np.sin(2 * np.pi * 460 * t)) * np.exp(-55 * t)
+    click_ = np.convolve(np.random.RandomState(2).randn(len(t)), np.ones(28) / 28, mode='same') * np.exp(-78 * t)
+    s = (0.75 * body + 0.35 * click_) * ar(len(t), 0.001, 0.012)
+    return to_wav(0.15 * s / (np.max(np.abs(s)) + 1e-9))
 
 
-def phase():           # passar de fase (flourish curto e alegre)
-    out = np.zeros(int(0.62 * RATE))
-    for i, nn in enumerate([79, 84, 88]):                 # G5 - C6 - E6 (subida)
-        add(out, bell(midi(nn), 0.45, 0.45, 5), int(i * 0.085 * RATE))
-    add(out, bell(midi(91), 0.4, 0.22, 8), int(0.27 * RATE))   # brilho final (G6)
-    return to_wav(0.82 * out / np.max(np.abs(out)))
+def door():            # entrar na porta (warp mágico: sweep + brilho + whoosh)
+    out = np.zeros(int(0.6 * RATE))
+    s, t = sweep(260, 1000, 0.42)
+    add(out, 0.32 * s * np.exp(-3.4 * t), 0)
+    for i, nn in enumerate([84, 88, 91]):
+        add(out, bell(midi(nn), 0.4, 0.26, 7), int((0.12 + i * 0.06) * RATE))
+    nz = np.convolve(np.random.RandomState(4).randn(len(out)), np.ones(28) / 28, mode='same')
+    env = (np.linspace(0, 1, len(out)) ** 1.5) * np.exp(-2.2 * np.linspace(0, 1, len(out)))
+    out += nz * env * 0.22
+    return to_wav(0.85 * out / np.max(np.abs(out)))
 
 
 def unlock():          # destravar porta (clack + chime subindo)
@@ -113,6 +165,14 @@ def unlock():          # destravar porta (clack + chime subindo)
     return to_wav(0.8 * out / np.max(np.abs(out)))
 
 
+def phase():           # passar de fase (flourish curto e alegre)
+    out = np.zeros(int(0.62 * RATE))
+    for i, nn in enumerate([79, 84, 88]):
+        add(out, bell(midi(nn), 0.45, 0.45, 5), int(i * 0.085 * RATE))
+    add(out, bell(midi(91), 0.4, 0.22, 8), int(0.27 * RATE))
+    return to_wav(0.82 * out / np.max(np.abs(out)))
+
+
 def party():           # festa/confete ao zerar
     dur = 1.8; out = np.zeros(int(dur * RATE))
     for nn, st in [(72, 0.0), (76, 0.12), (79, 0.24), (84, 0.36)]:
@@ -121,17 +181,17 @@ def party():           # festa/confete ao zerar
     ch = sum(0.11 * np.sin(2 * np.pi * midi(m) * t) for m in [72, 76, 79, 84]) * np.exp(-1.2 * t)
     add(out, ch, int(0.5 * RATE))
     rs = np.random.RandomState(3)
-    for _ in range(26):                                   # confete (sininhos altos)
+    for _ in range(26):
         add(out, bell(midi(rs.choice([84, 86, 88, 91, 93])), 0.25, 0.17, 10), int(rs.uniform(0.1, dur - 0.2) * RATE))
-    nz = np.convolve(rs.randn(len(out)), np.ones(4) / 4, mode='same')   # chocalho
+    nz = np.convolve(rs.randn(len(out)), np.ones(4) / 4, mode='same')
     out += nz * np.clip(np.sin(2 * np.pi * 9 * np.arange(len(out)) / RATE), 0, 1) * 0.05
     return to_wav(0.85 * out / np.max(np.abs(out)))
 
 
 def all_sounds():
     return {"musica": music(), "clique": click(), "coletar": collect(),
-            "pulo": jump(), "passo": step(), "destravar": unlock(),
-            "fase": phase(), "festa": party()}
+            "pulo": jump(), "passo": step(), "porta": door(),
+            "destravar": unlock(), "fase": phase(), "festa": party()}
 
 
 if __name__ == "__main__":

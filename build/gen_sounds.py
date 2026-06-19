@@ -77,39 +77,38 @@ def sweep(f0, f1, dur, square=False):
 
 
 # ==========================================================================
-def music():           # chiptune divertido e imersivo (8 compassos, ~14.5s)
-    bpm = 132; beat = 60.0 / bpm; eg = beat / 2
-    prog = [(48, [0, 4, 7]), (43, [0, 4, 7]), (45, [0, 3, 7]), (41, [0, 4, 7]),
-            (48, [0, 4, 7]), (43, [0, 4, 7]), (45, [0, 3, 7]), (41, [0, 4, 7])]
-    barlen = 8 * eg
+def music():           # corrida energética — homenagem ao estilo arcade racer
+    bpm = 150; b = 60.0 / bpm; s = b / 4.0          # s = semicolcheia (16th)
+    # cadência andaluza Am-G-F-E (i-VII-VI-V): tensão "de corrida", fecha o loop
+    prog = [(45, [0, 3, 7]), (43, [0, 4, 7]), (41, [0, 4, 7]), (40, [0, 4, 7])] * 2
+    barlen = 16 * s
     out = np.zeros(int(len(prog) * barlen * RATE) + RATE)
     for bi, (r, iv) in enumerate(prog):
         b0 = bi * barlen
-        # pad de acorde (warmth)
-        tb = tarr(barlen); pad = np.zeros(len(tb))
-        for iv2 in iv:
-            pad += 0.05 * tri(midi(r + 12 + iv2), tb)
-        pad *= ar(len(tb), 0.02, 0.1)
-        add(out, pad, int(b0 * RATE))
-        # melodia (lead quadrada, arpejo sobe-desce na 5ª oitava)
-        mel = [r + 24 + iv[0], r + 24 + iv[1], r + 24 + iv[2], r + 36 + iv[0],
-               r + 24 + iv[2], r + 24 + iv[1], r + 24 + iv[0], None]
-        for k, nn in enumerate(mel):
-            if nn is not None:
-                add(out, lead(midi(nn), eg * 0.95, 0.16), int((b0 + k * eg) * RATE))
-        # baixo (triângulo): tônica - 5ª - oitava - 5ª
-        bp = [r, None, r + 7, None, r + 12, None, r + 7, None]
+        # baixo galopante (semicolcheias): pulso incessante, sensação de velocidade
+        bp = [r, r + 12, r, r + 7, r, r + 12, r, r + 7,
+              r, r + 12, r, r + 7, r, r + 12, r + 7, r + 12]
         for k, nn in enumerate(bp):
-            if nn is not None:
-                add(out, bass(midi(nn), eg * 1.9, 0.24), int((b0 + k * eg) * RATE))
-        # bateria
-        for k in range(8):
-            tp = int((b0 + k * eg) * RATE)
-            add(out, hat() * 0.5, tp)
-            if k in (0, 4): add(out, kick(), tp)
-            if k in (2, 6): add(out, snare() * 0.7, tp)
+            add(out, bass(midi(nn), s * 1.05, 0.24), int((b0 + k * s) * RATE))
+        # power chords (raiz + 5ª) nas semínimas: peso "rock"
+        for k in range(4):
+            tt = tarr(b * 0.9)
+            pc = 0.085 * (sq(midi(r + 12), tt) + sq(midi(r + 19), tt))
+            pc *= ar(len(tt), 0.003, 0.05) * np.exp(-2.2 * tt)
+            add(out, pc, int((b0 + k * 4 * s) * RATE))
+        # lead (colcheias): melodia brilhante voando por cima do galope
+        mel = [r + 24 + iv[0], r + 24 + iv[1], r + 24 + iv[2], r + 24 + iv[1],
+               r + 24 + iv[2], r + 36, r + 24 + iv[2], r + 24 + iv[1]]
+        for k, nn in enumerate(mel):
+            add(out, lead(midi(nn), s * 1.9, 0.14, 0.5), int((b0 + k * 2 * s) * RATE))
+        # bateria: kick four-on-the-floor, caixa em 2 e 4, chimbais em 16th
+        for k in range(16):
+            tp = int((b0 + k * s) * RATE)
+            if k % 2 == 0: add(out, hat() * 0.4, tp)
+            if k in (0, 4, 8, 12): add(out, kick(), tp)
+            if k in (4, 12): add(out, snare() * 0.7, tp)
     out = out[:int(len(prog) * barlen * RATE)]
-    out *= 0.72 / np.max(np.abs(out))
+    out *= 0.74 / np.max(np.abs(out))
     f = int(0.004 * RATE); out[:f] *= np.linspace(0, 1, f); out[-f:] *= np.linspace(1, 0, f)
     return to_wav(out)
 

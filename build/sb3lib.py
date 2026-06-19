@@ -157,6 +157,15 @@ def change_effect(eff, v):      return S("looks_changeeffectby", {"CHANGE": v}, 
 def clear_effects():            return S("looks_cleargraphiceffects")
 def goto_front():               return S("looks_gotofrontback", fields={"FRONT_BACK": ["front", None]})
 def goto_back():                return S("looks_gotofrontback", fields={"FRONT_BACK": ["back", None]})
+
+# ---- som ----
+def play_sound(name):
+    return S("sound_play", {"SOUND_MENU": Rep(menu="sound_sounds_menu", field="SOUND_MENU", value=name)})
+def play_sound_until_done(name):
+    return S("sound_playuntildone", {"SOUND_MENU": Rep(menu="sound_sounds_menu", field="SOUND_MENU", value=name)})
+def stop_all_sounds():          return S("sound_stopallsounds")
+def set_volume(v):              return S("sound_setvolumeto", {"VOLUME": v})
+def change_volume(v):           return S("sound_changevolumeby", {"VOLUME": v})
 def go_forward(n):              return S("looks_goforwardbackwardlayers", {"NUM": n}, fields={"FORWARD_BACKWARD": ["forward", None]})
 def go_backward(n):             return S("looks_goforwardbackwardlayers", {"NUM": n}, fields={"FORWARD_BACKWARD": ["backward", None]})
 
@@ -188,6 +197,14 @@ class Target:
             "name": name, "dataFormat": "svg", "assetId": md5,
             "md5ext": md5 + ".svg", "rotationCenterX": cx, "rotationCenterY": cy,
             "_svg": svg_text,
+        })
+
+    def add_sound(self, name, wav_bytes, rate, sample_count):
+        md5 = hashlib.md5(wav_bytes).hexdigest()
+        self.sounds.append({
+            "name": name, "assetId": md5, "dataFormat": "wav", "format": "",
+            "rate": rate, "sampleCount": sample_count, "md5ext": md5 + ".wav",
+            "_bytes": wav_bytes,
         })
 
     def script(self, *stmts):
@@ -361,7 +378,7 @@ class Project:
             "comments": {},
             "currentCostume": t.current_costume,
             "costumes": [{k: v for k, v in c.items() if k != "_svg"} for c in t.costumes],
-            "sounds": t.sounds,
+            "sounds": [{k: v for k, v in s.items() if k != "_bytes"} for s in t.sounds],
             "volume": 100,
             "layerOrder": 0 if is_stage else t.layer,
         }

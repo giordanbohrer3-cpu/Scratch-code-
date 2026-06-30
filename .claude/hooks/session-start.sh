@@ -42,16 +42,21 @@ echo "==> Garantindo estrutura de pastas para novos projetos/jogos"
 mkdir -p "$PROJECT_DIR/projects" "$PROJECT_DIR/games" "$PROJECT_DIR/assets"
 touch "$PROJECT_DIR/projects/.gitkeep" "$PROJECT_DIR/games/.gitkeep" "$PROJECT_DIR/assets/.gitkeep"
 
-echo "==> Configurando variaveis de ambiente da sessao"
-{
-  echo "export PROJECTS_DIR=\"$PROJECT_DIR/projects\""
-  echo "export GAMES_DIR=\"$PROJECT_DIR/games\""
-  echo "export ASSETS_DIR=\"$PROJECT_DIR/assets\""
-  echo "export NODE_ENV=development"
-  echo "export PYTHONDONTWRITEBYTECODE=1"
-  echo "export PIP_DISABLE_PIP_VERSION_CHECK=1"
-  echo "export NPM_CONFIG_FUND=false"
-  echo "export NPM_CONFIG_AUDIT=false"
-} >> "$CLAUDE_ENV_FILE"
+echo "==> Carregando variaveis de ambiente (.env)"
+ENV_FILE="$PROJECT_DIR/.env"
+if [ -f "$ENV_FILE" ]; then
+  while IFS='=' read -r key value; do
+    # ignora linhas em branco e comentarios
+    [ -z "$key" ] && continue
+    case "$key" in \#*) continue ;; esac
+    # resolve caminhos relativos (./pasta) para absolutos dentro do projeto
+    case "$value" in
+      ./*) value="$PROJECT_DIR/${value#./}" ;;
+    esac
+    echo "export $key=\"$value\"" >> "$CLAUDE_ENV_FILE"
+  done < "$ENV_FILE"
+else
+  echo "  !! .env nao encontrado em $ENV_FILE"
+fi
 
 echo "==> Ambiente pronto para desenvolvimento"

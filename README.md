@@ -30,3 +30,21 @@ octave questao1.m
 ```
 
 Digite os valores conforme solicitado (um por vez) e o programa mostra o resultado.
+
+---
+
+# Lista de Exercícios – Matrizes
+
+Segunda lista da disciplina (Prof. Jonas Schreiber – UNIJUÍ), com 4 exercícios.
+Os arquivos seguem o **estilo do modelo do professor** (prompts `Linha`/`Coluna`,
+`fprintf` com `\t`, operador `++`).
+
+| Arquivo | Exercício |
+|---------|-----------|
+| `exercicio1.m` | Matriz M(6x6) × valor A → mostra a matriz resultante. |
+| `exercicio2.m` | Matriz M(4x4) × valor A → resultado em um vetor V(16). |
+| `exercicio3.m` | Matriz A(7x7): vetores VL (1º elemento de cada linha) e VC (último de cada coluna). |
+| `exercicio4.m` | Matriz A(5x3): total de elementos pares e ímpares. |
+| `Lista_Exercicios_Matrizes.pdf` | PDF com o enunciado, o código e a saída de exemplo de cada exercício. |
+
+Execução igual à anterior, ex.: `octave exercicio1.m`.

@@ -12,27 +12,28 @@
     --neon3:#34d399;  /* verde */
     --neon4:#fb7185;  /* rosa  */
     --amber:#fbbf24;
-    --card:rgba(255,255,255,.045);
-    --border:rgba(255,255,255,.10);
+    --neon5:#3b82f6;  /* azul */
+    --card:rgba(255,255,255,.05);
+    --border:rgba(255,255,255,.14);
     --mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
     --sans:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
   body{
-    font-family:var(--sans); color:var(--ink); overflow:hidden;
-    background:radial-gradient(1200px 800px at 20% -10%,#1c1747 0%,transparent 55%),
-               radial-gradient(1000px 700px at 110% 120%,#0b3a45 0%,transparent 50%),
-               linear-gradient(135deg,var(--bg0),var(--bg1));
+    font-family:var(--sans); color:var(--ink); overflow:hidden; background:#04050a;
   }
-  /* fundo animado (canvas de partículas) */
-  #bg{position:fixed;inset:0;z-index:0}
-  /* blobs coloridos girando de fundo */
-  .blob{position:fixed;border-radius:50%;filter:blur(70px);opacity:.32;z-index:0;
+  /* fundo animado — chuva de códigos estilo Matrix */
+  #bg{position:fixed;inset:0;z-index:0;background:#04050a}
+  /* véu escuro para manter os textos legíveis sobre a chuva */
+  .veil{position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(125% 88% at 50% 47%,rgba(4,5,10,.66) 0%,rgba(4,5,10,.42) 52%,rgba(4,5,10,.10) 100%)}
+  /* brilhos neon coloridos (azul/roxo/ciano) por cima da chuva */
+  .blob{position:fixed;border-radius:50%;filter:blur(85px);opacity:.24;z-index:0;
         mix-blend-mode:screen;animation:float 18s ease-in-out infinite}
-  .b1{width:420px;height:420px;background:var(--neon1);top:-120px;left:-80px}
-  .b2{width:380px;height:380px;background:var(--neon2);bottom:-140px;right:-60px;animation-delay:-6s}
-  .b3{width:300px;height:300px;background:var(--neon3);top:40%;left:60%;animation-delay:-11s}
+  .b1{width:460px;height:460px;background:var(--neon1);top:-140px;left:-90px}
+  .b2{width:420px;height:420px;background:var(--neon2);bottom:-150px;right:-70px;animation-delay:-6s}
+  .b3{width:360px;height:360px;background:var(--neon5);top:38%;left:62%;animation-delay:-11s}
   @keyframes float{0%,100%{transform:translate(0,0) scale(1)}
     33%{transform:translate(40px,-30px) scale(1.12)}
     66%{transform:translate(-30px,25px) scale(.94)}}
@@ -53,9 +54,9 @@
   .slide.active .wrap{animation:fadeUp .6s cubic-bezier(.2,.8,.2,1) both}
 
   h1{font-size:clamp(34px,6vw,66px);line-height:1.04;letter-spacing:-1px;
-     background:linear-gradient(100deg,var(--neon2),var(--neon1) 45%,var(--neon4));
+     background:linear-gradient(100deg,var(--neon3),var(--neon2) 32%,var(--neon5) 62%,var(--neon1));
      -webkit-background-clip:text;background-clip:text;color:transparent;
-     filter:drop-shadow(0 4px 26px rgba(139,92,246,.35))}
+     filter:drop-shadow(0 4px 26px rgba(59,130,246,.4))}
   h2{font-size:clamp(23px,3.4vw,38px);margin-bottom:16px;display:flex;align-items:center;gap:14px}
   h2 .ic{font-size:.9em;filter:drop-shadow(0 0 10px currentColor)}
   .kbadge{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--neon2);
@@ -126,8 +127,8 @@
 
   /* HUD */
   #prog{position:fixed;left:0;top:0;height:4px;width:0;z-index:5;
-        background:linear-gradient(90deg,var(--neon2),var(--neon1),var(--neon4));
-        box-shadow:0 0 12px var(--neon1);transition:width .4s}
+        background:linear-gradient(90deg,var(--neon3),var(--neon2),var(--neon5),var(--neon1));
+        box-shadow:0 0 12px var(--neon2);transition:width .4s}
   #dots{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:5;display:flex;gap:8px}
   #dots span{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.22);cursor:pointer;transition:.3s}
   #dots span.on{background:var(--neon2);box-shadow:0 0 10px var(--neon2);transform:scale(1.35)}
@@ -149,6 +150,7 @@
 <body>
   <canvas id="bg"></canvas>
   <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div class="veil"></div>
   <div id="prog"></div>
 
   <div id="deck">
@@ -621,34 +623,51 @@ Digitados 7 Pares e 8 Impares</div>
     for(var i=0;i<blocks.length;i++) typeOne(blocks[i]);
   }
 
-  /* ---------- fundo de partículas ---------- */
-  var bg = document.getElementById('bg'), bx = bg.getContext('2d'), P=[];
-  function resize(){ bg.width=innerWidth; bg.height=innerHeight; }
-  resize(); addEventListener('resize', resize);
-  var COLORS=['#8b5cf6','#22d3ee','#34d399','#fb7185'];
-  for(var i=0;i<70;i++){
-    P.push({x:Math.random()*innerWidth, y:Math.random()*innerHeight,
-            r:Math.random()*2.2+.6, vx:(Math.random()-.5)*.35, vy:(Math.random()-.5)*.35,
-            c:COLORS[i%COLORS.length]});
+  /* ---------- fundo estilo MATRIX (chuva de códigos) ---------- */
+  var bg = document.getElementById('bg'), bx = bg.getContext('2d');
+  var mfont = 16, cols = 0, drops = [], speed = [], colColor = [];
+  // verde dominante + toques neon de ciano / azul / roxo
+  var RAIN = ['#39ff9e','#39ff9e','#39ff9e','#39ff9e','#22d3ee','#5b8cff','#b98bff'];
+  var CH = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフabcdefghijklmnopqr0123456789<>[]{}()=+*;/%';
+  function initRain(){
+    bg.width = innerWidth; bg.height = innerHeight;
+    cols = Math.ceil(bg.width / mfont);
+    drops = []; speed = []; colColor = [];
+    for(var i=0;i<cols;i++){
+      drops[i] = Math.random() * bg.height / mfont;
+      speed[i] = 0.55 + Math.random() * 0.75;
+      colColor[i] = RAIN[Math.floor(Math.random()*RAIN.length)];
+    }
+    bx.fillStyle = '#04050a'; bx.fillRect(0,0,bg.width,bg.height);
   }
-  function drawBg(){
-    bx.clearRect(0,0,bg.width,bg.height);
-    for(var i=0;i<P.length;i++){
-      var p=P[i]; p.x+=p.vx; p.y+=p.vy;
-      if(p.x<0||p.x>bg.width) p.vx*=-1;
-      if(p.y<0||p.y>bg.height) p.vy*=-1;
-      bx.beginPath(); bx.arc(p.x,p.y,p.r,0,7); bx.fillStyle=p.c;
-      bx.globalAlpha=.55; bx.fill();
-      for(var j=i+1;j<P.length;j++){
-        var q=P[j], dx=p.x-q.x, dy=p.y-q.y, d=dx*dx+dy*dy;
-        if(d<12000){ bx.globalAlpha=(1-d/12000)*.18; bx.strokeStyle=p.c;
-          bx.lineWidth=1; bx.beginPath(); bx.moveTo(p.x,p.y); bx.lineTo(q.x,q.y); bx.stroke(); }
+  initRain();
+  addEventListener('resize', initRain);
+  var lastRain = 0;
+  function drawRain(ts){
+    requestAnimationFrame(drawRain);
+    if(ts - lastRain < 45) return;   // ~22 fps: efeito "steppy" de Matrix e leve na CPU
+    lastRain = ts;
+    // rastro: escurece a tela suavemente deixando o brilho das letras antigas sumir
+    bx.fillStyle = 'rgba(4,5,10,0.10)';
+    bx.fillRect(0,0,bg.width,bg.height);
+    bx.font = '700 ' + mfont + 'px monospace';
+    bx.textBaseline = 'top';
+    for(var i=0;i<cols;i++){
+      var ch = CH.charAt(Math.floor(Math.random()*CH.length));
+      var x = i*mfont, y = drops[i]*mfont;
+      // ponta: as vezes branca (brilho), a maioria na cor neon da coluna
+      bx.fillStyle = Math.random() < 0.12 ? '#eafff5' : colColor[i];
+      bx.shadowColor = colColor[i]; bx.shadowBlur = 7;
+      bx.fillText(ch, x, y);
+      drops[i] += speed[i];
+      if(y > bg.height && Math.random() > 0.965){
+        drops[i] = 0; speed[i] = 0.55 + Math.random()*0.75;
+        colColor[i] = RAIN[Math.floor(Math.random()*RAIN.length)];
       }
     }
-    bx.globalAlpha=1;
-    requestAnimationFrame(drawBg);
+    bx.shadowBlur = 0;
   }
-  drawBg();
+  requestAnimationFrame(drawRain);
 
   /* ---------- gráfico animado (senoide sendo desenhada) ---------- */
   var cv = document.getElementById('plot'), cx = cv.getContext('2d');

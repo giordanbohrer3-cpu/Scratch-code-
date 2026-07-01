@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Octave — Resumo Relâmpago (Colinha)</title>
+<style>
+  :root{
+    --bg0:#0a0a14; --bg1:#12122a; --ink:#e8ecff; --dim:#9aa3c7;
+    --neon1:#8b5cf6;  /* roxo */
+    --neon2:#22d3ee;  /* ciano */
+    --neon3:#34d399;  /* verde */
+    --neon4:#fb7185;  /* rosa  */
+    --amber:#fbbf24;
+    --card:rgba(255,255,255,.045);
+    --border:rgba(255,255,255,.10);
+    --mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+    --sans:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--sans); color:var(--ink); overflow:hidden;
+    background:radial-gradient(1200px 800px at 20% -10%,#1c1747 0%,transparent 55%),
+               radial-gradient(1000px 700px at 110% 120%,#0b3a45 0%,transparent 50%),
+               linear-gradient(135deg,var(--bg0),var(--bg1));
+  }
+  /* fundo animado (canvas de partículas) */
+  #bg{position:fixed;inset:0;z-index:0}
+  /* blobs coloridos girando de fundo */
+  .blob{position:fixed;border-radius:50%;filter:blur(70px);opacity:.32;z-index:0;
+        mix-blend-mode:screen;animation:float 18s ease-in-out infinite}
+  .b1{width:420px;height:420px;background:var(--neon1);top:-120px;left:-80px}
+  .b2{width:380px;height:380px;background:var(--neon2);bottom:-140px;right:-60px;animation-delay:-6s}
+  .b3{width:300px;height:300px;background:var(--neon3);top:40%;left:60%;animation-delay:-11s}
+  @keyframes float{0%,100%{transform:translate(0,0) scale(1)}
+    33%{transform:translate(40px,-30px) scale(1.12)}
+    66%{transform:translate(-30px,25px) scale(.94)}}
+
+  /* trilho de slides */
+  #deck{position:relative;z-index:2;height:100%;width:100%}
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;
+         justify-content:center;align-items:center;
+         padding:min(6vh,54px) min(7vw,90px);
+         opacity:0;transform:translateX(60px) scale(.98);
+         transition:opacity .55s ease,transform .55s cubic-bezier(.2,.8,.2,1)}
+  .slide.active{display:flex;opacity:1;transform:translateX(0) scale(1)}
+  .slide.prev{transform:translateX(-60px) scale(.98)}
+  .wrap{width:100%;max-width:1080px}
+
+  h1{font-size:clamp(34px,6vw,66px);line-height:1.04;letter-spacing:-1px;
+     background:linear-gradient(100deg,var(--neon2),var(--neon1) 45%,var(--neon4));
+     -webkit-background-clip:text;background-clip:text;color:transparent;
+     filter:drop-shadow(0 4px 26px rgba(139,92,246,.35))}
+  h2{font-size:clamp(24px,3.6vw,40px);margin-bottom:18px;display:flex;align-items:center;gap:14px}
+  h2 .ic{font-size:.9em;filter:drop-shadow(0 0 10px currentColor)}
+  .kbadge{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--neon2);
+          font-weight:700;margin-bottom:8px;opacity:.9}
+  p.lead{font-size:clamp(17px,2.1vw,22px);color:var(--dim);line-height:1.5}
+
+  ul.bul{list-style:none;margin-top:10px}
+  ul.bul li{font-size:clamp(16px,2vw,21px);line-height:1.35;margin:12px 0;padding-left:34px;
+     position:relative;opacity:0;transform:translateY(14px);
+     transition:opacity .5s,transform .5s}
+  .active ul.bul li{opacity:1;transform:none}
+  .active ul.bul li:nth-child(1){transition-delay:.15s}
+  .active ul.bul li:nth-child(2){transition-delay:.30s}
+  .active ul.bul li:nth-child(3){transition-delay:.45s}
+  .active ul.bul li:nth-child(4){transition-delay:.60s}
+  .active ul.bul li:nth-child(5){transition-delay:.75s}
+  .active ul.bul li:nth-child(6){transition-delay:.90s}
+  ul.bul li::before{content:'▹';position:absolute;left:4px;top:0;color:var(--neon3);
+     text-shadow:0 0 10px var(--neon3)}
+  ul.bul li b{color:var(--ink)}
+  code.inl{font-family:var(--mono);background:rgba(139,92,246,.16);color:#d9c9ff;
+     padding:1px 7px;border-radius:6px;border:1px solid rgba(139,92,246,.3);font-size:.92em}
+
+  /* blocos de código */
+  .code{font-family:var(--mono);font-size:clamp(13px,1.55vw,17px);line-height:1.55;
+     background:linear-gradient(180deg,#0d1024,#0a0c1c);
+     border:1px solid var(--border);border-left:3px solid var(--neon1);
+     border-radius:12px;padding:16px 18px;white-space:pre;overflow:auto;
+     box-shadow:0 16px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.04)}
+  .code .win{display:block;margin:-4px 0 10px}
+  .dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:7px}
+  .code .cmt{color:#6f7aa8;font-style:italic}
+  .code .kw{color:var(--neon4);font-weight:600}
+  .code .fn{color:var(--neon2)}
+  .code .str{color:var(--neon3)}
+  .code .num{color:var(--amber)}
+  .code .op{color:#c7b6ff}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:center}
+  @media(max-width:820px){.two{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;
+        backdrop-filter:blur(6px)}
+  .out{font-family:var(--mono);font-size:14px;color:#bfe9c9;background:#08130c;
+       border:1px solid rgba(52,211,153,.25);border-radius:10px;padding:12px 14px;white-space:pre}
+  .tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:1px;color:#0a0a14;
+       background:linear-gradient(90deg,var(--neon2),var(--neon3));padding:3px 10px;border-radius:999px}
+
+  /* tabela resumo */
+  table.res{width:100%;border-collapse:collapse;font-size:clamp(13px,1.7vw,18px)}
+  table.res td{padding:9px 12px;border-bottom:1px solid var(--border)}
+  table.res td:first-child{font-family:var(--mono);color:var(--neon2);white-space:nowrap;width:42%}
+  table.res tr:hover td{background:rgba(139,92,246,.08)}
+
+  /* gráfico */
+  #plot{width:100%;max-width:560px;height:320px;background:#080a18;border:1px solid var(--border);
+        border-radius:14px;box-shadow:0 18px 44px rgba(0,0,0,.5)}
+  .replay{margin-top:12px;cursor:pointer;font-size:14px;color:var(--neon2);
+          background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.35);
+          padding:7px 14px;border-radius:999px;user-select:none;display:inline-flex;gap:8px;align-items:center}
+  .replay:hover{background:rgba(34,211,238,.2)}
+
+  /* HUD */
+  #prog{position:fixed;left:0;top:0;height:4px;width:0;z-index:5;
+        background:linear-gradient(90deg,var(--neon2),var(--neon1),var(--neon4));
+        box-shadow:0 0 12px var(--neon1);transition:width .4s}
+  #dots{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:5;display:flex;gap:9px}
+  #dots span{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.22);cursor:pointer;transition:.3s}
+  #dots span.on{background:var(--neon2);box-shadow:0 0 10px var(--neon2);transform:scale(1.35)}
+  #nav{position:fixed;bottom:14px;right:18px;z-index:5;display:flex;gap:8px}
+  #nav button{background:var(--card);border:1px solid var(--border);color:var(--ink);
+     width:42px;height:38px;border-radius:10px;font-size:18px;cursor:pointer;transition:.2s}
+  #nav button:hover{background:rgba(139,92,246,.25);border-color:var(--neon1)}
+  #pageno{position:fixed;bottom:20px;left:20px;z-index:5;color:var(--dim);font-size:13px;font-variant-numeric:tabular-nums}
+  .hint{position:fixed;top:14px;right:18px;z-index:5;color:var(--dim);font-size:12px;opacity:.75}
+  .footer{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:1;color:var(--dim);font-size:11px;opacity:.0}
+
+  .pill{display:inline-block;font-size:13px;color:var(--neon3);border:1px solid rgba(52,211,153,.3);
+        background:rgba(52,211,153,.08);padding:4px 12px;border-radius:999px;margin:4px 6px 0 0}
+  .center{text-align:center}
+  .big-emoji{font-size:clamp(46px,9vw,90px);filter:drop-shadow(0 0 26px rgba(139,92,246,.5));
+     animation:pulse 2.6s ease-in-out infinite}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+</style>
+</head>
+<body>
+  <canvas id="bg"></canvas>
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div id="prog"></div>
+
+  <div id="deck">
+
+    <!-- 1 CAPA -->
+    <section class="slide">
+      <div class="wrap center">
+        <div class="big-emoji">📊</div>
+        <div class="kbadge">Programação Algorítmica · Octave</div>
+        <h1>Octave&nbsp;— Resumo Relâmpago</h1>
+        <p class="lead" style="margin-top:16px">Sua <b style="color:var(--amber)">colinha</b> visual pra revisar o básico rápido:
+          variáveis, condições, laços, vetores, matrizes e gráficos.</p>
+        <div style="margin-top:22px">
+          <span class="pill">Ato02 · básico</span><span class="pill">Ato03 · condições</span>
+          <span class="pill">Ato04 · laços</span><span class="pill">Vetores</span><span class="pill">Matrizes</span>
+        </div>
+        <p class="lead" style="margin-top:26px;font-size:15px">Use as <b>setas ← →</b> (ou espaço) para navegar. Boa prova! 🍀</p>
+      </div>
+    </section>
+
+    <!-- 2 O QUE É -->
+    <section class="slide">
+      <div class="wrap">
+        <div class="kbadge">Fundamentos</div>
+        <h2><span class="ic">🧠</span>O que é o Octave</h2>
+        <div class="two">
+          <ul class="bul">
+            <li>Ambiente de <b>cálculo numérico</b> (quase igual ao MATLAB) — ótimo para <b>vetores e matrizes</b>.</li>
+            <li>Você digita na <b>Janela de Comandos</b> ou salva um arquivo <code class="inl">.m</code> e executa.</li>
+            <li><code class="inl">%</code> começa um <b>comentário</b>.</li>
+            <li><code class="inl">;</code> no fim da linha <b>esconde</b> a saída; sem <code class="inl">;</code> ele <b>mostra</b> o resultado.</li>
+            <li>Rodar um script: escreva o nome do arquivo (sem <code class="inl">.m</code>) e Enter.</li>
+          </ul>
+          <div class="code"><span class="win"><span class="dot" style="background:#ff5f56"></span><span class="dot" style="background:#ffbd2e"></span><span class="dot" style="background:#27c93f"></span></span><span class="cmt">% meu primeiro script</span>
+<span class="kw">x</span> <span class="op">=</span> <span class="num">5</span><span class="op">;</span>        <span class="cmt">% ; esconde a saida</span>
+<span class="kw">y</span> <span class="op">=</span> <span class="num">3</span>         <span class="cmt">% sem ; -> mostra y = 3</span>
+<span class="fn">disp</span>(<span class="str">'Ola, Octave!'</span>)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 ENTRADA / SAIDA -->
+    <section class="slide">
+      <div class="wrap">
+        <div class="kbadge">Ato 02 · Entrada e Saída</div>
+        <h2><span class="ic">⌨️</span>Ler e Escrever</h2>
+        <div class="two">
+          <ul class="bul">
+            <li><code class="inl">input</code> lê um valor do teclado.</li>
+            <li><code class="inl">disp</code> mostra um texto ou valor.</li>
+            <li><code class="inl">printf</code>/<code class="inl">fprintf</code> mostram com formato: <code class="inl">%d</code> inteiro, <code class="inl">%f</code> real, <code class="inl">\n</code> nova linha, <code class="inl">\t</code> tabulação.</li>
+            <li><code class="inl">sprintf</code> monta um texto formatado numa variável.</li>
+          </ul>
+          <div class="code"><span class="cmt">% media de gasolina (Ato02)</span>
+<span class="kw">preco</span> <span class="op">=</span> <span class="fn">input</span>(<span class="str">'Preco do litro: '</span>)<span class="op">;</span>
+<span class="kw">valor</span> <span class="op">=</span> <span class="fn">input</span>(<span class="str">'Quanto abastecer: '</span>)<span class="op">;</span>
+<span class="kw">litros</span> <span class="op">=</span> <span class="kw">valor</span> <span class="op">/</span> <span class="kw">preco</span><span class="op">;</span>
+<span class="fn">printf</span>(<span class="str">'Voce abastece %.2f litros\n'</span><span class="op">,</span> <span class="kw">litros</span>)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 OPERADORES -->
+    <section class="slide">
+      <div class="wrap">
+        <div class="kbadge">Operadores</div>
+        <h2><span class="ic">➗</span>Contas, Comparações e Lógica</h2>
+        <div class="two">
+          <ul class="bul">
+            <li><b>Aritméticos:</b> <code class="inl">+ − * /</code>, potência <code class="inl">^</code>, resto da divisão <code class="inl">mod(a,b)</code>.</li>
+            <li><b>Relacionais:</b> <code class="inl">==</code> igual, <code class="inl">~=</code> diferente, <code class="inl">&lt; &gt; &lt;= &gt;=</code>.</li>
+            <li><b>Lógicos:</b> <code class="inl">&amp;&amp;</code> (e), <code class="inl">||</code> (ou), <code class="inl">!</code> (não).</li>
+            <li>Truque do <b>par/ímpar</b>: <code class="inl">mod(x,2)==0</code> → par.</li>
+          </ul>
+          <div class="code"><span class="cmt">% media ponderada (Ato02)</span>
+<span class="kw">n1</span><span class="op">=</span><span class="fn">input</span>(<span class="str">'Nota1: '</span>)<span class="op">;</span> <span class="kw">n2</span><span class="op">=</span><span class="fn">input</span>(<span class="str">'Nota2: '</span>)<span class="op">;</span>
+<span class="kw">n3</span><span class="op">=</span><span class="fn">input</span>(<span class="str">'Nota3: '</span>)<span class="op">;</span>
+<span class="kw">mp</span> <span class="op">=</span> (<span class="num">2</span><span class="op">*</span><span class="kw">n1</span> <span class="op">+</span> <span class="num">3</span><span class="op">*</span><span class="kw">n2</span> <span class="op">+</span> <span class="num">5</span><span class="op">*</span><span class="kw">n3</span>) <span class="op">/</span> <span class="num">10</span><span class="op">;</span>
+<span class="fn">printf</span>(<span class="str">'Media = %.1f\n'</span><span class="op">,</span> <span class="kw">mp</span>)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 CONDICIONAIS -->
+    <section class="slide">
+      <div class="wrap">
+        <div class="kbadge">Ato 03 · Decisões</div>
+        <h2><span class="ic">🔀</span>if / elseif / else</h2>
+        <div class="two">
+          <ul class="bul">
+            <li>Executa um bloco <b>só se</b> a condição for verdadeira.</li>
+            <li>Sempre fecha com <code class="inl">end</code>.</li>
+            <li>Vários casos? Use <code class="inl">elseif</code> em cadeia.</li>
+          </ul>
+          <div class="code"><span class="cmt">% categoria do nadador (Ato03)</span>
+<span class="kw">idade</span> <span class="op">=</span> <span class="fn">input</span>(<span class="str">'Idade: '</span>)<span class="op">;</span>
+<span class="kw">if</span> <span class="kw">idade</span> <span class="op">&gt;=</span> <span class="num">5</span> <span class="op">&amp;&amp;</span> <span class="kw">idade</span> <span class="op">&lt;=</span> <span class="num">7</span>
+  <span class="fn">disp</span>(<span class="str">'Infantil'</span>)
+<span class="kw">elseif</span> <span class="kw">idade</span> <span class="op">&lt;=</span> <span class="num">11</span>
+  <span class="fn">disp</span>(<span class="str">'Juvenil'</span>)
+<span class="kw">elseif</span> <span class="kw">idade</span> <span class="op">&lt;=</span> <span class="num">17</span>
+  <span class="fn">disp</span>(<span class="str">'Adolescente'</span>)
+<span class="kw">else</span>
+  <span class="fn">disp</span>(<span class="str">'Adulto/Senior'</span>)
+<span class="kw">end</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 FOR -->
+    <section class="slide">
+      <div class="wrap">
+        <div class="kbadge">Ato 04 · Repetição</div>
+        <h2><span class="ic">🔁</span>Laço for</h2>
+        <div class="two">
+          <ul class="bul">
+            <li><code class="inl">for i = 1:n</code> repete de 1 até n.</li>
+            <li>Pode ter passo: <code class="inl">for i = 0:2:10</code> (de 2 em 2).</li>
+            <li>Fecha com <code class="inl">end</code>. Ideal para <b>percorrer vetores/matrizes</b>.</li>
+          </ul>
+          <div class="card">
+            <div class="code"><span class="cmt">% tabuada de um numero (Ato04)</span>
+<span class="kw">n</span> <span class="op">=</span> <span class="fn">input</span>(<span class="str">'Numero: '</span>)<span class="op">;</span>
+<span class="kw">for</span> <span class="kw">i</span> <span class="op">=</span> <span class="num">1</span><span class="op">:</span><span class="num">10</span>
+  <span class="fn">printf</span>(<span class="str">'%d x %d = %d\n'</span><span class="op">,</span> <span class="kw">n</span><span class="op">,</span> <span class="kw">i</span><span class="op">,</span> <span class="kw">n</span><span class="op">*</span><span class="kw">i</span>)
+<span class="kw">end</span></div>
+            <div class="out" style="margin-top:12px">Numero: 3
+3 x 1 = 3
+3 x 2 = 6
+3 x 3 = 9
+...
+3 x 10 = 30</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7 WHILE -->
+    <section class="slide">
+      <div class="wrap">
+        <div class="kbadge">Ato 04 · Repetição</div>
+        <h2><span class="ic">♾️</span>Laço while (repete enquanto…)</h2>
+        <div class="two">
+          <ul class="bul">
+            <li>Repete <b>enquanto</b> a condição for verdadeira — bom quando não se sabe quantas vezes.</li>
+            <li>Cuidado para a condição <b>mudar</b> dentro do laço (senão trava!).</li>
+            <li>Clássico: <b>validar entrada</b> (só aceitar positivo).</li>
+          </ul>
+          <div class="code"><span class="cmt">% soma de 5 numeros positivos (Ato04)</span>
+<span class="kw">soma</span> <span class="op">=</span> <span class="num">0</span><span class="op">;</span>
+<span class="kw">for</span> <span class="kw">i</span> <span class="op">=</span> <span class="num">1</span><span class="op">:</span><span class="num">5</span>
+  <span class="kw">x</span> <span class="op">=</span> <span class="fn">input</span>(<span class="str">'Positivo: '</span>)<span class="op">;</span>
+  <span class="kw">while</span> <span class="kw">x</span> <span class="op">&lt;</span> <span class="num">0</span>          <span class="cmt">% rejeita negativo</span>
+    <span class="kw">x</span> <span class="op">=</span> <span class="fn">input</span>(<span class="str">'Invalido, de novo: '</span>)<span class="op">;</span>
+  <span class="kw">end</span>
+  <span class="kw">soma</span> <span class="op">=</span> <span class="kw">soma</span> <span class="op">+</span> <span class="kw">x</span><span class="op">;</span>
+<span class="kw">end</span>
+<span class="fn">printf</span>(<span class="str">'Soma = %d\n'</span><span class="op">,</span> <span class="kw">soma</span>)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8 VETORES -->
+    <section class="slide">
+      <div class="wrap">
+        <div class="kbadge">Vetores</div>
+        <h2><span class="ic">📏</span>Vetores (lista de números)</h2>
+        <div class="two">
+          <ul class="bul">
+            <li>Criar: <code class="inl">v = [10 20 30]</code> · sequência <code class="inl">1:10</code> · zerado <code class="inl">zeros(1,10)</code>.</li>
+            <li>Acessar posição: <code class="inl">v(1)</code> é o <b>1º</b> (índice começa em 1!).</li>
+            <li>Tamanho: <code class="inl">length(v)</code>. Percorrer com <code class="inl">for</code>.</li>
+            <li>Prontos: <code class="inl">max(v)</code>, <code class="inl">min(v)</code>, <code class="inl">sum(v)</code>, <code class="inl">sort(v)</code>.</li>
+          </ul>
+          <div class="code"><span class="cmt">% vetor: dobro do indice (Vetores)</span>
+<span class="kw">for</span> <span class="kw">i</span> <span class="op">=</span> <span class="num">1</span><span class="op">:</span><span class="num">20</span>
+  <span class="kw">v</span>(<span class="kw">i</span>) <span class="op">=</span> <span class="kw">i</span> <span class="op">*</span> <span class="num">2</span><span class="op">;</span>
+<span class="kw">end</span>
+
+<span class="cmt">% maior e menor de um vetor</span>
+<span class="fn">printf</span>(<span class="str">'Maior=%d Menor=%d\n'</span><span class="op">,</span> <span class="fn">max</span>(<span class="kw">v</span>)<span class="op">,</span> <span class="fn">min</span>(<span class="kw">v</span>))</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9 MATRIZES -->
+    <section class="slide">
+      <div class="wrap">
+        <div class="kbadge">Matrizes</div>
+        <h2><span class="ic">🔢</span>Matrizes (tabela linhas × colunas)</h2>
+        <div class="two">
+          <ul class="bul">
+            <li>Criar: <code class="inl">M = [1 2; 3 4]</code> (<code class="inl">;</code> troca de linha) · <code class="inl">zeros(5,5)</code>.</li>
+            <li>Elemento: <code class="inl">M(i,j)</code> = linha <b>i</b>, coluna <b>j</b>.</li>
+            <li>Ler com <b>2 for aninhados</b> (um por linha, um por coluna).</li>
+            <li>Diagonal <b>principal</b>: <code class="inl">i==j</code> · <b>secundária</b>: <code class="inl">i+j==n+1</code>.</li>
+          </ul>
+          <div class="code"><span class="cmt">% ler matriz 5x5 (2 laços)</span>
+<span class="kw">for</span> <span class="kw">i</span> <span class="op">=</span> <span class="num">1</span><span class="op">:</span><span class="num">5</span>
+  <span class="kw">for</span> <span class="kw">j</span> <span class="op">=</span> <span class="num">1</span><span class="op">:</span><span class="num">5</span>
+    <span class="kw">M</span>(<span class="kw">i</span><span class="op">,</span><span class="kw">j</span>) <span class="op">=</span> <span class="fn">input</span>(<span class="str">' '</span>)<span class="op">;</span>
+  <span class="kw">end</span>
+<span class="kw">end</span>
+<span class="kw">M</span> <span class="op">*</span> <span class="num">2</span>        <span class="cmt">% multiplica tudo por 2</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 EX1 pares/impares -->
+    <section class="slide">
+      <div class="wrap">
+        <div class="kbadge">Exemplo resolvido 1/5</div>
+        <h2><span class="ic">✅</span>Contar Pares e Ímpares (matriz)</h2>
+        <div class="two">
+          <div class="code"><span class="kw">Pares</span><span class="op">=</span><span class="num">0</span><span class="op">;</span> <span class="kw">Impares</span><span class="op">=</span><span class="num">0</span><span class="op">;</span>
+<span class="kw">for</span> <span class="kw">I</span><span class="op">=</span><span class="num">1</span><span class="op">:</span><span class="num">5</span>
+  <span class="kw">for</span> <span class="kw">J</span><span class="op">=</span><span class="num">1</span><span class="op">:</span><span class="num">3</span>
+    <span class="kw">if</span> <span class="fn">mod</span>(<span class="kw">A</span>(<span class="kw">I</span><span class="op">,</span><span class="kw">J</span>)<span class="op">,</span><span class="num">2</span>) <span class="op">==</span> <span class="num">0</span>
+      <span class="kw">Pares</span><span class="op">++;</span>
+    <span class="kw">else</span>
+      <span class="kw">Impares</span><span class="op">++;</span>
+    <span class="kw">end</span>
+  <span class="kw">end</span>
+<span class="kw">end</span>
+<span class="fn">printf</span>(<span class="str">'%d Pares e %d Impares\n'</span><span class="op">,</span><span class="kw">Pares</span><span class="op">,</span><span class="kw">Impares</span>)</div>
+          <div>
+            <p class="lead">💡 A chave é <code class="inl">mod(x,2)==0</code>: se o resto por 2 é zero, é <b>par</b>.</p>
+            <div class="out" style="margin-top:14px">Matriz 5×3 com 1..15
+Digitados 7 Pares e 8 Impares</div>
+            <span class="tag" style="margin-top:14px">Nosso questao4 / exercicio4</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11 EX2 diagonal + minimax -->
+    <section class="slide">
+      <div class="wrap">
+        <div class="kbadge">Exemplo resolvido 2/5 e 3/5</div>
+        <h2><span class="ic">✳️</span>Diagonal principal · Minimax</h2>
+        <div class="two">
+          <div class="code"><span class="cmt">% diagonal principal = 1, resto = 0</span>
+<span class="kw">R</span> <span class="op">=</span> <span class="fn">zeros</span>(<span class="num">5</span><span class="op">,</span><span class="num">5</span>)<span class="op">;</span>
+<span class="kw">for</span> <span class="kw">i</span><span class="op">=</span><span class="num">1</span><span class="op">:</span><span class="num">5</span>
+  <span class="kw">R</span>(<span class="kw">i</span><span class="op">,</span><span class="kw">i</span>) <span class="op">=</span> <span class="num">1</span><span class="op">;</span>   <span class="cmt">% i==j</span>
+<span class="kw">end</span></div>
+          <div class="code"><span class="cmt">% minimax: menor da linha do maior</span>
+[<span class="kw">mx</span><span class="op">,</span> <span class="kw">idx</span>] <span class="op">=</span> <span class="fn">max</span>(<span class="kw">M</span>(<span class="op">:</span>))<span class="op">;</span>
+[<span class="kw">lin</span><span class="op">,</span> <span class="op">~</span>] <span class="op">=</span> <span class="fn">ind2sub</span>(<span class="fn">size</span>(<span class="kw">M</span>)<span class="op">,</span> <span class="kw">idx</span>)<span class="op">;</span>
+<span class="kw">mini</span> <span class="op">=</span> <span class="fn">min</span>(<span class="kw">M</span>(<span class="kw">lin</span><span class="op">,</span><span class="op">:</span>))<span class="op">;</span>
+<span class="fn">printf</span>(<span class="str">'Minimax=%d na linha %d\n'</span><span class="op">,</span><span class="kw">mini</span><span class="op">,</span><span class="kw">lin</span>)</div>
+        </div>
+        <p class="lead center" style="margin-top:18px">Diagonal <b>principal</b> → <code class="inl">i==j</code> · <b>secundária</b> → <code class="inl">i+j==n+1</code>. <span class="tag">Nosso questao1 / questao6</span></p>
+      </div>
+    </section>
+
+    <!-- 12 EX matriz*escalar -> vetor -->
+    <section class="slide">
+      <div class="wrap">
+        <div class="kbadge">Exemplo resolvido 4/5 e 5/5</div>
+        <h2><span class="ic">🧮</span>Matriz × valor → vetor · Maior da linha</h2>
+        <div class="two">
+          <div class="code"><span class="cmt">% M(4x4)*A guardado num vetor V(16)</span>
+<span class="kw">K</span> <span class="op">=</span> <span class="num">1</span><span class="op">;</span>
+<span class="kw">for</span> <span class="kw">I</span><span class="op">=</span><span class="num">1</span><span class="op">:</span><span class="num">4</span>
+  <span class="kw">for</span> <span class="kw">J</span><span class="op">=</span><span class="num">1</span><span class="op">:</span><span class="num">4</span>
+    <span class="kw">V</span>(<span class="kw">K</span>) <span class="op">=</span> <span class="kw">M</span>(<span class="kw">I</span><span class="op">,</span><span class="kw">J</span>) <span class="op">*</span> <span class="kw">A</span><span class="op">;</span>
+    <span class="kw">K</span><span class="op">++;</span>
+  <span class="kw">end</span>
+<span class="kw">end</span></div>
+          <div class="code"><span class="cmt">% maior numero de cada linha</span>
+<span class="kw">for</span> <span class="kw">i</span><span class="op">=</span><span class="num">1</span><span class="op">:</span><span class="num">5</span>
+  <span class="kw">maior</span> <span class="op">=</span> <span class="kw">M</span>(<span class="kw">i</span><span class="op">,</span><span class="num">1</span>)<span class="op">;</span>
+  <span class="kw">for</span> <span class="kw">j</span><span class="op">=</span><span class="num">2</span><span class="op">:</span><span class="num">4</span>
+    <span class="kw">if</span> <span class="kw">M</span>(<span class="kw">i</span><span class="op">,</span><span class="kw">j</span>) <span class="op">&gt;</span> <span class="kw">maior</span>
+      <span class="kw">maior</span> <span class="op">=</span> <span class="kw">M</span>(<span class="kw">i</span><span class="op">,</span><span class="kw">j</span>)<span class="op">;</span>
+    <span class="kw">end</span>
+  <span class="kw">end</span>
+  <span class="fn">printf</span>(<span class="str">'Linha %d: %d\n'</span><span class="op">,</span><span class="kw">i</span><span class="op">,</span><span class="kw">maior</span>)
+<span class="kw">end</span></div>
+        </div>
+        <p class="lead center" style="margin-top:16px"><span class="tag">Nosso exercicio2 / questao5</span></p>
+      </div>
+    </section>
+
+    <!-- 13 GRAFICOS animado -->
+    <section class="slide">
+      <div class="wrap">
+        <div class="kbadge">Gráficos</div>
+        <h2><span class="ic">📈</span>Plotar no Octave (ao vivo!)</h2>
+        <div class="two">
+          <div>
+            <div class="code"><span class="kw">x</span> <span class="op">=</span> <span class="num">0</span><span class="op">:</span><span class="num">0.1</span><span class="op">:</span><span class="num">2</span><span class="op">*</span><span class="fn">pi</span><span class="op">;</span>
+<span class="kw">y</span> <span class="op">=</span> <span class="fn">sin</span>(<span class="kw">x</span>)<span class="op">;</span>
+<span class="fn">plot</span>(<span class="kw">x</span><span class="op">,</span> <span class="kw">y</span>)<span class="op">;</span>
+<span class="fn">title</span>(<span class="str">'Seno'</span>)<span class="op">;</span> <span class="fn">grid</span> <span class="kw">on</span><span class="op">;</span>
+<span class="fn">xlabel</span>(<span class="str">'x'</span>)<span class="op">;</span> <span class="fn">ylabel</span>(<span class="str">'sin(x)'</span>)<span class="op">;</span></div>
+            <ul class="bul" style="margin-top:14px">
+              <li><code class="inl">plot(x,y)</code> desenha a curva · <code class="inl">bar(v)</code> barras · <code class="inl">hold on</code> sobrepõe.</li>
+              <li><code class="inl">title</code>, <code class="inl">xlabel</code>, <code class="inl">grid on</code> deixam o gráfico completo.</li>
+            </ul>
+            <span class="replay" id="replay">↻ Desenhar de novo</span>
+          </div>
+          <div class="center">
+            <canvas id="plot" width="560" height="320"></canvas>
+            <p class="lead" style="font-size:14px;margin-top:8px">👆 o gráfico é "desenhado" como no Octave</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 14 COLINHA final -->
+    <section class="slide">
+      <div class="wrap">
+        <div class="kbadge">Colinha final</div>
+        <h2><span class="ic">🎯</span>Comandos essenciais (decore estes!)</h2>
+        <div class="two" style="align-items:start">
+          <table class="res">
+            <tr><td>x = input('t')</td><td>lê valor do teclado</td></tr>
+            <tr><td>disp / printf</td><td>mostra na tela</td></tr>
+            <tr><td>mod(a,2)==0</td><td>testa par</td></tr>
+            <tr><td>if / elseif / else / end</td><td>decisão</td></tr>
+            <tr><td>for i=1:n … end</td><td>repete n vezes</td></tr>
+            <tr><td>while cond … end</td><td>repete enquanto</td></tr>
+          </table>
+          <table class="res">
+            <tr><td>v=[1 2 3]; v(1)</td><td>vetor e acesso</td></tr>
+            <tr><td>M=[1 2;3 4]; M(i,j)</td><td>matriz e elemento</td></tr>
+            <tr><td>zeros(n) · length · size</td><td>criar / tamanho</td></tr>
+            <tr><td>max min sum sort</td><td>prontos úteis</td></tr>
+            <tr><td>i==j · i+j==n+1</td><td>diagonais</td></tr>
+            <tr><td>plot(x,y) · bar · title</td><td>gráficos</td></tr>
+          </table>
+        </div>
+        <p class="lead center" style="margin-top:22px">Índices começam em <b style="color:var(--amber)">1</b> · todo bloco fecha com <code class="inl">end</code> · <code class="inl">%</code> comenta · <code class="inl">;</code> silencia. <b>Boa prova! 🍀</b></p>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- HUD -->
+  <div id="dots"></div>
+  <div id="nav"><button id="prev">‹</button><button id="next">›</button></div>
+  <div id="pageno"></div>
+  <div class="hint">← → navegar · F tela cheia</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var cur = 0, N = slides.length;
+  var dots = document.getElementById('dots');
+  var prog = document.getElementById('prog');
+  var pageno = document.getElementById('pageno');
+
+  slides.forEach(function(s,i){
+    var d = document.createElement('span');
+    d.addEventListener('click', function(){ go(i); });
+    dots.appendChild(d);
+  });
+  var dotEls = dots.children;
+
+  function go(i){
+    if(i<0) i=0; if(i>=N) i=N-1;
+    slides.forEach(function(s,k){
+      s.classList.remove('active','prev');
+      if(k===i) s.classList.add('active');
+      else if(k<i) s.classList.add('prev');
+    });
+    for(var k=0;k<dotEls.length;k++) dotEls[k].className = (k===i?'on':'');
+    prog.style.width = ((i)/(N-1)*100)+'%';
+    pageno.textContent = (i+1)+' / '+N;
+    cur = i;
+    if(i===plotSlideIndex) startPlot();
+  }
+
+  function next(){ go(cur+1); }
+  function prev(){ go(cur-1); }
+  document.getElementById('next').onclick = next;
+  document.getElementById('prev').onclick = prev;
+
+  document.addEventListener('keydown', function(e){
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){ e.preventDefault(); next(); }
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){ e.preventDefault(); prev(); }
+    else if(e.key==='Home'){ go(0); }
+    else if(e.key==='End'){ go(N-1); }
+    else if(e.key==='f'||e.key==='F'){
+      if(!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    }
+  });
+  // swipe
+  var sx=0;
+  document.addEventListener('touchstart',function(e){ sx=e.touches[0].clientX; },{passive:true});
+  document.addEventListener('touchend',function(e){
+    var dx=e.changedTouches[0].clientX - sx;
+    if(dx<-50) next(); else if(dx>50) prev();
+  },{passive:true});
+
+  /* ---------- fundo de partículas ---------- */
+  var bg = document.getElementById('bg'), bx = bg.getContext('2d'), P=[];
+  function resize(){ bg.width=innerWidth; bg.height=innerHeight; }
+  resize(); addEventListener('resize', resize);
+  var COLORS=['#8b5cf6','#22d3ee','#34d399','#fb7185'];
+  for(var i=0;i<70;i++){
+    P.push({x:Math.random()*innerWidth, y:Math.random()*innerHeight,
+            r:Math.random()*2.2+.6, vx:(Math.random()-.5)*.35, vy:(Math.random()-.5)*.35,
+            c:COLORS[i%COLORS.length]});
+  }
+  function drawBg(){
+    bx.clearRect(0,0,bg.width,bg.height);
+    for(var i=0;i<P.length;i++){
+      var p=P[i]; p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0||p.x>bg.width) p.vx*=-1;
+      if(p.y<0||p.y>bg.height) p.vy*=-1;
+      bx.beginPath(); bx.arc(p.x,p.y,p.r,0,7); bx.fillStyle=p.c;
+      bx.globalAlpha=.55; bx.fill();
+      for(var j=i+1;j<P.length;j++){
+        var q=P[j], dx=p.x-q.x, dy=p.y-q.y, d=dx*dx+dy*dy;
+        if(d<12000){ bx.globalAlpha=(1-d/12000)*.18; bx.strokeStyle=p.c;
+          bx.lineWidth=1; bx.beginPath(); bx.moveTo(p.x,p.y); bx.lineTo(q.x,q.y); bx.stroke(); }
+      }
+    }
+    bx.globalAlpha=1;
+    requestAnimationFrame(drawBg);
+  }
+  drawBg();
+
+  /* ---------- gráfico animado (senoide sendo desenhada) ---------- */
+  var plotSlideIndex = 12; // slide 13 (0-based)
+  var cv = document.getElementById('plot'), cx = cv.getContext('2d');
+  var W=cv.width, H=cv.height, pad=38, animId=null;
+  function axes(){
+    cx.clearRect(0,0,W,H);
+    // grade
+    cx.strokeStyle='rgba(255,255,255,.07)'; cx.lineWidth=1;
+    for(var gx=pad; gx<=W-pad; gx+=(W-2*pad)/8){ cx.beginPath(); cx.moveTo(gx,pad); cx.lineTo(gx,H-pad); cx.stroke(); }
+    for(var gy=pad; gy<=H-pad; gy+=(H-2*pad)/6){ cx.beginPath(); cx.moveTo(pad,gy); cx.lineTo(W-pad,gy); cx.stroke(); }
+    // eixos
+    cx.strokeStyle='rgba(255,255,255,.35)'; cx.lineWidth=1.5;
+    var y0=H/2;
+    cx.beginPath(); cx.moveTo(pad,pad); cx.lineTo(pad,H-pad); cx.stroke();         // y
+    cx.beginPath(); cx.moveTo(pad,y0); cx.lineTo(W-pad,y0); cx.stroke();           // x
+    cx.fillStyle='#9aa3c7'; cx.font='12px monospace';
+    cx.fillText('sin(x)',6,pad+2); cx.fillText('x',W-pad+6,y0+4);
+    cx.fillStyle='#22d3ee'; cx.font='bold 13px monospace';
+    cx.fillText('Seno',W/2-18,pad-14);
+  }
+  function startPlot(){
+    if(animId) cancelAnimationFrame(animId);
+    axes();
+    var t=0, steps=130;
+    function frame(){
+      var x0=pad, x1=W-pad, y0=H/2, amp=(H/2-pad)*0.9;
+      // desenha a curva ate o ponto t
+      cx.strokeStyle='#34d399'; cx.lineWidth=2.6; cx.shadowColor='#34d399'; cx.shadowBlur=12;
+      cx.beginPath();
+      for(var k=0;k<=t;k++){
+        var fx = k/steps;                 // 0..1
+        var px = x0 + fx*(x1-x0);
+        var py = y0 - Math.sin(fx*2*Math.PI)*amp;
+        if(k===0) cx.moveTo(px,py); else cx.lineTo(px,py);
+      }
+      cx.stroke(); cx.shadowBlur=0;
+      // ponto na ponta
+      var fxt=t/steps, ptx=x0+fxt*(x1-x0), pty=y0-Math.sin(fxt*2*Math.PI)*amp;
+      cx.beginPath(); cx.arc(ptx,pty,4,0,7); cx.fillStyle='#eafff2'; cx.fill();
+      t++;
+      if(t<=steps){ animId=requestAnimationFrame(frame); }
+    }
+    frame();
+  }
+  document.getElementById('replay').onclick = startPlot;
+
+  go(0);
+})();
+</script>
+</body>
+</html>

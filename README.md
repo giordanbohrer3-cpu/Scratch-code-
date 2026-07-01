@@ -48,3 +48,17 @@ Os arquivos seguem o **estilo do modelo do professor** (prompts `Linha`/`Coluna`
 | `Lista_Exercicios_Matrizes.pdf` | PDF com o enunciado, o código e a saída de exemplo de cada exercício. |
 
 Execução igual à anterior, ex.: `octave exercicio1.m`.
+
+---
+
+# Slides de Estudo – Octave (Colinha)
+
+`Octave_Resumo_Slides.html` — apresentação **interativa** (um único arquivo HTML,
+funciona offline no navegador) para revisar Octave rápido antes da prova. 14 slides
+cobrindo: fundamentos, entrada/saída, operadores, condicionais (`if/elseif/else`),
+laços (`for`/`while`), vetores, matrizes, 5 exemplos já resolvidos e um slide de
+**gráficos com a curva sendo desenhada** (simulando `plot`). Tema escuro neon, fundo
+animado e transições.
+
+**Como usar:** dê duplo clique no arquivo (abre no navegador). Navegue com as
+**setas ← →** ou **espaço**; tecla **F** para tela cheia.

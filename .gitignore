@@ -21,3 +21,13 @@ rad.json
 *.flf
 #Test results file
 TestResults.xml
+### Projeto Dupla das Artes ###
+# Pastas de análise/teste e dependências (não versionar)
+_analyze/
+node_modules/
+_vmtest/node_modules/
+_vmtest/package-lock.json
+build/__pycache__/
+preview/
+_up/
+_snd/

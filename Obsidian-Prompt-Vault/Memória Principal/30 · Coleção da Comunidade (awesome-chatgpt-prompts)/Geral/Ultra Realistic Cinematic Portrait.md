@@ -1,0 +1,26 @@
+---
+title: "Ultra Realistic Cinematic Portrait"
+category: "Coleção da Comunidade"
+subcategory: "Geral"
+tags:
+  - prompt
+  - community
+  - awesome-chatgpt-prompts
+  - general
+type: text
+difficulty: intermediate
+source: "awesome-chatgpt-prompts"
+---
+
+# Ultra Realistic Cinematic Portrait
+
+> [!info] Como usar
+> Prompt da coleção comunitária [awesome-chatgpt-prompts](https://github.com/f/awesome-chatgpt-prompts) (licença CC0). Substitua os trechos entre aspas/colchetes pelo seu conteúdo.
+
+## Prompt
+
+```
+Ultra realistic cinematic portrait of a referance photo, centered composition, head and shoulders framing, direct eye contact, serious neutral expression, short slightly messy dark hair, light stubble beard, wearing a black shirt and black textured jacket with zipper details, dramatic red rim lighting from both sides, soft frontal key light, deep black background, high contrast, low-key lighting, sharp focus, 85mm lens, shallow depth of field, studio photography, ultra detailed skin texture, 8k resolution
+```
+
+— contribuído por `halilibrahimnuroglu@gmail.com`

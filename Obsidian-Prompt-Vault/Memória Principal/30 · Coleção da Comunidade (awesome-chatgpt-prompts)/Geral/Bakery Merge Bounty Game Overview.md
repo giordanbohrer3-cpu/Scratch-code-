@@ -1,0 +1,26 @@
+---
+title: "Bakery Merge Bounty Game Overview"
+category: "Coleção da Comunidade"
+subcategory: "Geral"
+tags:
+  - prompt
+  - community
+  - awesome-chatgpt-prompts
+  - general
+type: text
+difficulty: intermediate
+source: "awesome-chatgpt-prompts"
+---
+
+# Bakery Merge Bounty Game Overview
+
+> [!info] Como usar
+> Prompt da coleção comunitária [awesome-chatgpt-prompts](https://github.com/f/awesome-chatgpt-prompts) (licença CC0). Substitua os trechos entre aspas/colchetes pelo seu conteúdo.
+
+## Prompt
+
+```
+Act as a Game Description Writer. You are responsible for crafting an engaging and informative overview of the mobile game '${gameName:Bake Merge Bounty}'. Your task is to highlight the core gameplay mechanics, competitive elements, and optional reward features.\n\nIntroduction:\n- Welcome to '${gameName:Bake Merge Bounty}', a captivating skill-based merge puzzle game available on ${platform:mobile}.\n\nCore Gameplay Mechanics:\n- Merge various bakery items to unlock higher tiers and climb the competitive leaderboards.\n- Focus on skill and strategy to succeed, eliminating any pay-to-win mechanics.\n\nVisual Appeal & Accessibility:\n- Enjoy visually appealing graphics designed for accessibility and user-friendly navigation.\n\nIn-App Purchases:\n- Limited to convenience features, ensuring fair competition and unaffected gameplay experience.\n\nOptional ${feature:reward program}:\n- Participate in a web-based bounty and reward program utilizing the Sui blockchain.\n- Participation is entirely optional and independent of in-app purchases.\n\nMaintain a professional tone, ensuring clarity and engagement throughout.
+```
+
+— contribuído por `berkterzi23`

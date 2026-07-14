@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#1a0a12" />
+  <title>Feliz Aniversário, Daiene! 🎉</title>
+  <style>
+    :root {
+      --pink-bright: #ff4d94;
+      --pink-soft: #ff99b9;
+      --red-warm: #d64564;
+      --gold: #ffd700;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #2d1420 0%, #1a0a12 50%, #2d1420 100%);
+      background-attachment: fixed;
+      color: #fff5f8;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      overflow-y: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      text-align: center;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .layer {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    #corações { z-index: 0; }
+    #confetes { z-index: 1; }
+    #balões { z-index: 1; }
+    #fogos { z-index: 2; }
+
+    /* corações piscando e batendo sutis */
+    #corações .coração {
+      position: absolute;
+      font-size: clamp(14px, 3vw, 28px);
+      color: var(--pink-soft);
+      opacity: 0;
+      text-shadow: 0 0 8px rgba(255, 77, 148, 0.4);
+      animation: piscaEbate 2.5s ease-in-out infinite;
+      user-select: none;
+    }
+    @keyframes piscaEbate {
+      0%   { opacity: 0; transform: scale(0.8); }
+      25%  { opacity: 0.12; transform: scale(1); }
+      50%  { opacity: 0.08; transform: scale(0.9); }
+      75%  { opacity: 0.12; transform: scale(1); }
+      100% { opacity: 0; transform: scale(0.8); }
+    }
+
+    /* confetes caindo */
+    #confetes .confete {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      pointer-events: none;
+      animation: chuvaConfete 3s linear infinite;
+    }
+    @keyframes chuvaConfete {
+      0%   { transform: translateY(-100vh) rotateZ(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotateZ(720deg); opacity: 0; }
+    }
+
+    /* balões flutuando */
+    #balões .balão {
+      position: absolute;
+      width: 40px;
+      height: 50px;
+      border-radius: 50% 50% 50% 0;
+      pointer-events: none;
+      animation: subeBalão linear infinite;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+    @keyframes subeBalão {
+      0%   { transform: translateY(100vh) translateX(0) rotateZ(0deg); opacity: 1; }
+      100% { transform: translateY(-100vh) translateX(40px) rotateZ(360deg); opacity: 0; }
+    }
+
+    /* fogos de artifício */
+    #fogos .fogo {
+      position: absolute;
+      font-size: 18px;
+      pointer-events: none;
+      will-change: transform, opacity;
+    }
+
+    .stage {
+      position: relative;
+      z-index: 10;
+      max-width: 580px;
+      width: 100%;
+      padding: 40px 28px;
+    }
+
+    .big-emoji {
+      font-size: clamp(80px, 22vw, 160px);
+      line-height: 1;
+      animation: flutuaBrilha 1.5s ease-in-out infinite;
+      margin-bottom: 24px;
+      display: inline-block;
+    }
+    @keyframes flutuaBrilha {
+      0%, 100% { transform: scale(1) translateY(0); opacity: 1; }
+      50%      { transform: scale(1.1) translateY(-8px); opacity: 0.9; }
+    }
+
+    .título {
+      font-size: clamp(28px, 7vw, 40px);
+      font-weight: 800;
+      line-height: 1.4;
+      letter-spacing: 1px;
+      text-shadow:
+        0 0 12px rgba(255, 77, 148, 0.6),
+        0 0 24px rgba(214, 69, 100, 0.4);
+      margin-bottom: 32px;
+      animation: fadeIn 800ms ease both;
+    }
+
+    .mensagem {
+      font-size: clamp(16px, 4.2vw, 20px);
+      font-weight: 400;
+      line-height: 1.8;
+      letter-spacing: 0.3px;
+      color: #ffe6f0;
+      text-shadow: 0 0 8px rgba(255, 77, 148, 0.3);
+      margin-bottom: 32px;
+      animation: fadeIn 900ms ease 300ms both;
+      text-wrap: balance;
+    }
+
+    .btn {
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+      border: 2px solid var(--pink-bright);
+      background: rgba(255, 77, 148, 0.12);
+      color: #fff5f8;
+      font-size: clamp(16px, 4vw, 20px);
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      padding: 16px 36px;
+      min-height: 56px;
+      border-radius: 8px;
+      text-shadow: 0 0 6px rgba(255, 77, 148, 0.5);
+      touch-action: manipulation;
+      box-shadow:
+        0 0 16px rgba(255, 77, 148, 0.5),
+        inset 0 0 12px rgba(255, 77, 148, 0.2);
+      transition: all 0.3s ease;
+      animation: btnPulseAniver 2s ease-in-out infinite;
+    }
+    .btn:hover {
+      transform: translateY(-3px) scale(1.06);
+      background: rgba(255, 77, 148, 0.22);
+      box-shadow:
+        0 0 24px rgba(255, 77, 148, 0.8),
+        0 0 44px rgba(214, 69, 100, 0.5),
+        inset 0 0 16px rgba(255, 77, 148, 0.4);
+    }
+    .btn:active { transform: scale(0.98); }
+    @keyframes btnPulseAniver {
+      0%, 100% { box-shadow: 0 0 16px rgba(255,77,148,0.5), inset 0 0 12px rgba(255,77,148,0.2); }
+      50%      { box-shadow: 0 0 28px rgba(255,77,148,0.85), inset 0 0 18px rgba(255,77,148,0.35); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); filter: blur(4px); }
+      to { opacity: 1; transform: translateY(0); filter: blur(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #corações .coração, .big-emoji, .btn { animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layer" id="corações" aria-hidden="true"></div>
+  <div class="layer" id="confetes" aria-hidden="true"></div>
+  <div class="layer" id="balões" aria-hidden="true"></div>
+  <div class="layer" id="fogos" aria-hidden="true"></div>
+
+  <main class="stage" id="stage">
+    <!-- injetado via JS -->
+  </main>
+
+  <script>
+    // ---------- corações piscando de fundo ----------
+    (function makeCorações() {
+      const c = document.getElementById('corações');
+      const total = 8;
+      for (let i = 0; i < total; i++) {
+        const s = document.createElement('div');
+        s.className = 'coração';
+        s.textContent = '♥';
+        s.style.left = Math.random() * 100 + 'vw';
+        s.style.top = Math.random() * 100 + 'vh';
+        s.style.animationDuration = (2 + Math.random() * 2) + 's';
+        s.style.animationDelay = (-Math.random() * 2.5) + 's';
+        c.appendChild(s);
+      }
+    })();
+
+    // ---------- confetes ----------
+    function spawmConfete() {
+      const c = document.getElementById('confetes');
+      const cores = ['#ff4d94', '#ff99b9', '#ffd700', '#ff6fa5', '#d64564'];
+      const x = Math.random() * window.innerWidth;
+      const conf = document.createElement('div');
+      conf.className = 'confete';
+      conf.style.left = x + 'px';
+      conf.style.backgroundColor = cores[Math.floor(Math.random() * cores.length)];
+      conf.style.animationDuration = (2 + Math.random() * 2) + 's';
+      c.appendChild(conf);
+      setTimeout(() => conf.remove(), 4000);
+    }
+
+    // ---------- balões ----------
+    function spawnBalão() {
+      const b = document.getElementById('balões');
+      const cores = ['#ff4d94', '#ff99b9', '#ffd700', '#ff6fa5'];
+      const x = Math.random() * window.innerWidth;
+      const balão = document.createElement('div');
+      balão.className = 'balão';
+      balão.style.left = x + 'px';
+      balão.style.backgroundColor = cores[Math.floor(Math.random() * cores.length)];
+      balão.style.animationDuration = (4 + Math.random() * 3) + 's';
+      b.appendChild(balão);
+      setTimeout(() => balão.remove(), 7000);
+    }
+
+    // ---------- fogos de artifício ----------
+    function fogosArtifício(x, y) {
+      const f = document.getElementById('fogos');
+      const emojis = ['✨', '🎇', '⭐', '💫', '🌟'];
+      for (let i = 0; i < 20; i++) {
+        const fogo = document.createElement('div');
+        fogo.className = 'fogo';
+        fogo.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        fogo.style.left = x + 'px';
+        fogo.style.top = y + 'px';
+        fogo.style.fontSize = (12 + Math.random() * 24) + 'px';
+        f.appendChild(fogo);
+
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 80 + Math.random() * 200;
+        const dx = Math.cos(angle) * dist;
+        const dy = Math.sin(angle) * dist - 80;
+        const dur = 1200 + Math.random() * 800;
+
+        fogo.animate([
+          { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+          { transform: `translate(${dx}px, ${dy}px) scale(0.5)`, opacity: 0.8, offset: 0.6 },
+          { transform: `translate(${dx * 1.2}px, ${dy * 1.2}px) scale(0.1)`, opacity: 0 }
+        ], { duration: dur, easing: 'cubic-bezier(0.15, 0.7, 0.3, 1)' });
+
+        setTimeout(() => fogo.remove(), dur + 50);
+      }
+    }
+
+    // ---------- Spotify autoplay ----------
+    const TRACK_ID = '0e1mKVP6VIWBazuzI8eSj1'; // Feliz Aniversário - Musical JM
+    let spotifyBooted = false;
+    let musicaTocando = false;
+
+    function playSpotify() {
+      const mount = document.getElementById('spotify-embed');
+      if (!mount || spotifyBooted) return;
+      spotifyBooted = true;
+
+      function boot(IFrameAPI) {
+        try {
+          IFrameAPI.createController(mount, {
+            uri: 'spotify:track:' + TRACK_ID,
+            width: '100%',
+            height: 152
+          }, (controller) => {
+            const tryPlay = () => {
+              try {
+                controller.play();
+                musicaTocando = true;
+              } catch (e) {}
+            };
+            controller.addListener('ready', tryPlay);
+            setTimeout(tryPlay, 250);
+            setTimeout(tryPlay, 1200);
+          });
+        } catch (e) {}
+      }
+
+      if (window.__spotifyIframeApi) { boot(window.__spotifyIframeApi); return; }
+      window.onSpotifyIframeApiReady = (IFrameAPI) => {
+        window.__spotifyIframeApi = IFrameAPI;
+        boot(IFrameAPI);
+      };
+      if (!document.getElementById('spotify-api-script')) {
+        const s = document.createElement('script');
+        s.id = 'spotify-api-script';
+        s.src = 'https://open.spotify.com/embed/iframe-api/v1';
+        s.async = true;
+        document.head.appendChild(s);
+      }
+    }
+
+    // ---------- lógica do cartão ----------
+    const stage = document.getElementById('stage');
+    let telaAtual = 0;
+
+    function renderTela0() {
+      stage.innerHTML = `
+        <div class="big-emoji">🎉</div>
+        <h1 class="título">Achou que ia passar em branco, né?</h1>
+        <button class="btn" id="btn-surprise">Clica aqui! 🎂</button>
+      `;
+
+      document.getElementById('btn-surprise').addEventListener('click', (e) => {
+        // inicia efeitos
+        for (let i = 0; i < 40; i++) {
+          setTimeout(() => spawmConfete(), i * 30);
+          setTimeout(() => spawnBalão(), i * 80);
+        }
+        fogosArtifício(window.innerWidth / 2, window.innerHeight / 2);
+        playSpotify();
+        setTimeout(() => renderTela1(), 800);
+      });
+    }
+
+    function renderTela1() {
+      stage.innerHTML = `
+        <div class="big-emoji">💕</div>
+        <h1 class="título">Daiene Thaís Gonzaga</h1>
+        <div class="mensagem">
+          Obrigado por tudo que você fez por mim a vida inteira. Obrigado por ser essa mulher forte, incrível, guerreira que você é. Por nos ensinar sobre amor, coragem e perseverança. Por estar sempre ao nosso lado, nos apoiando em cada momento. Você é nosso maior exemplo de vida. Que este dia seja tão especial quanto você merece ser todos os dias. Feliz Aniversário, mãe! 🎁💐
+        </div>
+        <button class="btn" id="btn-final">Ver mensagem final 💌</button>
+      `;
+
+      document.getElementById('btn-final').addEventListener('click', () => {
+        renderTela2();
+      });
+    }
+
+    function renderTela2() {
+      stage.innerHTML = `
+        <div class="big-emoji">🎊</div>
+        <h1 class="título">Dos Seus Filhos Queridos</h1>
+        <div class="mensagem" style="font-size: clamp(17px, 4.5vw, 21px); font-style: italic;">
+          Te amamos muito de coração! 💗
+        </div>
+        <div class="mensagem" style="font-size: clamp(15px, 3.8vw, 18px); opacity: 0.9;">
+          Que este seja apenas o primeiro de muitos aniversários ao nosso lado. Obrigado por ser a mãe melhor do mundo!
+        </div>
+      `;
+    }
+
+    renderTela0();
+  </script>
+</body>
+</html>

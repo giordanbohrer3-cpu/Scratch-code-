@@ -42,8 +42,8 @@
       background-size: cover;
       background-position: center;
       background-attachment: fixed;
-      opacity: 0.15;
-      filter: blur(1px) brightness(0.9);
+      opacity: 0.28;
+      filter: brightness(1);
       pointer-events: none;
       z-index: 0;
     }
@@ -217,8 +217,28 @@
       to { opacity: 1; transform: translateY(0); filter: blur(0); }
     }
 
+    .coracaoGrandeFinal {
+      font-size: clamp(60px, 18vw, 120px);
+      line-height: 1;
+      color: #ffffff;
+      text-shadow:
+        0 0 12px rgba(255, 255, 255, 0.8),
+        0 0 24px rgba(255, 255, 255, 0.6),
+        0 0 40px rgba(255, 255, 255, 0.4);
+      animation: batidaNeon 1.2s ease-in-out infinite;
+      display: inline-block;
+      margin-top: 24px;
+      user-select: none;
+    }
+    @keyframes batidaNeon {
+      0%, 100% { transform: scale(1); }
+      14%      { transform: scale(1.2); }
+      28%      { transform: scale(1); }
+      42%      { transform: scale(1.15); }
+    }
+
     @media (prefers-reduced-motion: reduce) {
-      #corações .coração, .big-emoji, .btn { animation: none !important; }
+      #corações .coração, .big-emoji, .btn, .coracaoGrandeFinal { animation: none !important; }
     }
   </style>
 </head>
@@ -414,6 +434,7 @@
         <div class="mensagem" style="font-size: clamp(15px, 3.8vw, 18px); opacity: 0.9;">
           Que este seja mais um de muitos aniversários do nosso lado. Obrigado por ser a melhor mãe do mundo!
         </div>
+        <div class="coracaoGrandeFinal">♥</div>
       `;
     }
 
@@ -421,4 +442,4 @@
   </script>
 </body>
 </html>
-<!-- cache bust 1783996500 -->
+<!-- cache bust 1783996550 -->

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Para você 💗</title>
+  <style>
+    :root {
+      --neon-pink: #ff2d78;
+      --neon-soft: #ff6fa5;
+      --neon-glow: #ff1e5a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      /* fundo escuro, meio vermelho-sangue, mas suave */
+      background:
+        radial-gradient(circle at 50% 30%, #3a0d16 0%, #240710 45%, #12040a 100%);
+      color: #ffe6ef;
+      min-height: 100%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      text-align: center;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* coraçõezinhos fraquinhos decorando o fundo */
+    .bg-hearts {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .bg-hearts span {
+      position: absolute;
+      bottom: -40px;
+      color: var(--neon-soft);
+      opacity: 0.08;
+      filter: drop-shadow(0 0 6px rgba(255, 45, 120, 0.4));
+      animation: floatUp linear infinite;
+      user-select: none;
+    }
+    @keyframes floatUp {
+      0%   { transform: translateY(0) scale(1) rotate(0deg); opacity: 0; }
+      12%  { opacity: 0.12; }
+      88%  { opacity: 0.10; }
+      100% { transform: translateY(-110vh) scale(1.1) rotate(20deg); opacity: 0; }
+    }
+
+    /* palco principal */
+    .stage {
+      position: relative;
+      z-index: 2;
+      max-width: 620px;
+      padding: 32px 26px;
+      width: 92vw;
+    }
+
+    /* coração pulsante neon do começo */
+    .big-heart {
+      font-size: clamp(80px, 20vw, 150px);
+      line-height: 1;
+      color: var(--neon-pink);
+      text-shadow:
+        0 0 8px #fff0f6,
+        0 0 18px var(--neon-glow),
+        0 0 38px var(--neon-glow),
+        0 0 70px var(--neon-pink);
+      animation: beat 1.3s ease-in-out infinite;
+      margin-bottom: 26px;
+      display: inline-block;
+    }
+    @keyframes beat {
+      0%, 100% { transform: scale(1); }
+      15%      { transform: scale(1.18); }
+      30%      { transform: scale(1); }
+      45%      { transform: scale(1.1); }
+    }
+
+    .msg {
+      font-size: clamp(20px, 4.4vw, 30px);
+      font-weight: 600;
+      line-height: 1.5;
+      letter-spacing: 0.3px;
+      text-shadow: 0 0 10px rgba(255, 45, 120, 0.55), 0 0 22px rgba(255, 30, 90, 0.35);
+      margin-bottom: 18px;
+    }
+    .sub {
+      font-size: clamp(15px, 3.2vw, 19px);
+      font-weight: 400;
+      line-height: 1.7;
+      color: #ffcfe0;
+      opacity: 0.92;
+      text-shadow: 0 0 8px rgba(255, 45, 120, 0.35);
+      margin-bottom: 30px;
+    }
+
+    /* animação de entrada dos textos */
+    .reveal { animation: reveal 900ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+    @keyframes reveal {
+      0%   { opacity: 0; transform: translateY(18px) scale(0.96); filter: blur(6px); }
+      100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    }
+
+    /* botão neon */
+    .btn {
+      appearance: none;
+      cursor: pointer;
+      border: 2px solid var(--neon-pink);
+      background: rgba(255, 45, 120, 0.08);
+      color: #fff0f6;
+      font-size: clamp(16px, 3.4vw, 20px);
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 15px 34px;
+      border-radius: 50px;
+      text-shadow: 0 0 8px var(--neon-glow);
+      box-shadow:
+        0 0 12px rgba(255, 45, 120, 0.6),
+        inset 0 0 12px rgba(255, 45, 120, 0.25);
+      transition: transform 0.18s ease, box-shadow 0.25s ease, background 0.25s ease;
+      animation: btnPulse 2s ease-in-out infinite;
+    }
+    .btn:hover {
+      transform: translateY(-2px) scale(1.05);
+      background: rgba(255, 45, 120, 0.22);
+      box-shadow:
+        0 0 22px rgba(255, 45, 120, 0.9),
+        0 0 44px rgba(255, 30, 90, 0.6),
+        inset 0 0 16px rgba(255, 45, 120, 0.4);
+    }
+    .btn:active { transform: scale(0.97); }
+    @keyframes btnPulse {
+      0%, 100% { box-shadow: 0 0 12px rgba(255,45,120,0.6), inset 0 0 12px rgba(255,45,120,0.25); }
+      50%      { box-shadow: 0 0 24px rgba(255,45,120,0.9), inset 0 0 18px rgba(255,45,120,0.4); }
+    }
+
+    /* corações da explosão */
+    .burst-heart {
+      position: fixed;
+      z-index: 9999;
+      pointer-events: none;
+      color: var(--neon-pink);
+      will-change: transform, opacity;
+      text-shadow:
+        0 0 6px #fff0f6,
+        0 0 14px var(--neon-glow),
+        0 0 26px var(--neon-pink);
+    }
+
+    /* bloco do spotify */
+    .spotify-wrap {
+      margin: 8px auto 0;
+      max-width: 420px;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 0 26px rgba(255, 45, 120, 0.55);
+      animation: reveal 900ms ease both;
+    }
+    .spotify-wrap iframe { display: block; width: 100%; border: 0; }
+
+    .signature {
+      margin-top: 26px;
+      font-size: 14px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--neon-soft);
+      opacity: 0.75;
+      text-shadow: 0 0 8px rgba(255, 45, 120, 0.4);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .big-heart, .btn, .bg-hearts span { animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-hearts" id="bgHearts" aria-hidden="true"></div>
+
+  <main class="stage" id="stage">
+    <!-- conteúdo injetado via JS -->
+  </main>
+
+  <script>
+    // ---------- corações fraquinhos de fundo ----------
+    (function makeBgHearts() {
+      const c = document.getElementById('bgHearts');
+      const total = 12; // poucos, só pra decorar
+      for (let i = 0; i < total; i++) {
+        const s = document.createElement('span');
+        s.textContent = '♥';
+        s.style.left = Math.random() * 100 + 'vw';
+        s.style.fontSize = (14 + Math.random() * 34) + 'px';
+        s.style.animationDuration = (14 + Math.random() * 16) + 's';
+        s.style.animationDelay = (-Math.random() * 20) + 's';
+        c.appendChild(s);
+      }
+    })();
+
+    // ---------- explosão de corações neon ----------
+    function heartBurst(x, y, amount) {
+      amount = amount || 34;
+      for (let i = 0; i < amount; i++) {
+        const h = document.createElement('div');
+        h.className = 'burst-heart';
+        h.textContent = '♥';
+        const size = 16 + Math.random() * 30;
+        h.style.fontSize = size + 'px';
+        h.style.left = x + 'px';
+        h.style.top = y + 'px';
+        // tons variados de rosa/vermelho neon
+        const hue = 330 + Math.random() * 25;
+        h.style.color = `hsl(${hue}, 100%, ${62 + Math.random() * 12}%)`;
+        document.body.appendChild(h);
+
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 90 + Math.random() * 240;
+        const dx = Math.cos(angle) * dist;
+        const dy = Math.sin(angle) * dist - (60 + Math.random() * 80); // leve subida
+        const rot = (Math.random() * 720 - 360);
+        const dur = 900 + Math.random() * 900;
+
+        h.animate([
+          { transform: 'translate(-50%, -50%) scale(0.2) rotate(0deg)', opacity: 1 },
+          { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(1) rotate(${rot}deg)`, opacity: 1, offset: 0.7 },
+          { transform: `translate(calc(-50% + ${dx * 1.15}px), calc(-50% + ${dy * 1.15}px)) scale(0.9) rotate(${rot}deg)`, opacity: 0 }
+        ], { duration: dur, easing: 'cubic-bezier(0.15, 0.7, 0.3, 1)' });
+
+        setTimeout(() => h.remove(), dur + 60);
+      }
+    }
+
+    function burstFromEvent(e) {
+      let x = window.innerWidth / 2, y = window.innerHeight / 2;
+      if (e && e.clientX) { x = e.clientX; y = e.clientY; }
+      heartBurst(x, y, 40);
+      // uma segunda leva do centro pra encher a tela
+      setTimeout(() => heartBurst(window.innerWidth / 2, window.innerHeight * 0.45, 26), 120);
+    }
+
+    // ---------- roteiro dos cliques ----------
+    const stage = document.getElementById('stage');
+
+    const scenes = [
+      // Tela inicial
+      {
+        html: `
+          <div class="big-heart">♥</div>
+          <p class="sub reveal">Fiz uma coisa pra você...</p>
+          <button class="btn" data-next>Clique aqui 💗</button>
+        `
+      },
+      // Clique 1
+      {
+        html: `
+          <div class="big-heart">♥</div>
+          <h1 class="msg reveal">Que bom que eu te encontrei de novo.</h1>
+          <p class="sub reveal">De todos os caminhos possíveis,<br>o meu insistiu em cruzar com o seu.</p>
+          <button class="btn" data-next>Continuar 💞</button>
+        `
+      },
+      // Clique 2
+      {
+        html: `
+          <h1 class="msg reveal">Eu acho que a gente estava<br>fadado a se reencontrar.</h1>
+          <p class="sub reveal">O destino guardou esse momento só pra nós dois —<br>
+          pra caminharmos juntos daqui pra frente, de mãos dadas.<br><br>
+          <strong>Espero não te perder nunca mais.</strong></p>
+          <button class="btn" data-next>Uma última coisa 🎶</button>
+        `
+      },
+      // Clique 3 (final + Spotify)
+      {
+        html: `
+          <h1 class="msg reveal">Enquanto essa música tocar,<br>lembra de mim. 🎶</h1>
+          <p class="sub reveal">Porque, do meu jeitinho,<br>eu vou estar sempre <em>te esperando</em>.</p>
+          <div class="spotify-wrap">
+            <iframe
+              src="https://open.spotify.com/embed/track/6hFf7OkFnEzxmtdLxwwKc1?utm_source=generator&theme=0"
+              width="100%" height="152" frameborder="0"
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+              loading="lazy"></iframe>
+          </div>
+          <div class="signature">Te Esperando · Luan Santana</div>
+        `
+      }
+    ];
+
+    let current = -1;
+
+    function render(index, e) {
+      current = index;
+      stage.innerHTML = scenes[index].html;
+      const nextBtn = stage.querySelector('[data-next]');
+      if (nextBtn) {
+        nextBtn.addEventListener('click', (ev) => {
+          burstFromEvent(ev);
+          render(current + 1, ev);
+        });
+      }
+      // a partir do primeiro clique, sempre solta corações ao trocar de cena
+      if (index > 0 && e) {
+        // já disparado pelo botão
+      }
+    }
+
+    render(0);
+  </script>
+</body>
+</html>

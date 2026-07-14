@@ -110,10 +110,11 @@
 
     .buttons-container {
       display: flex;
-      gap: 20px;
+      gap: 16px;
       justify-content: center;
-      flex-wrap: wrap;
       align-items: center;
+      flex-wrap: nowrap;
+      margin-top: 30px;
     }
 
     .btn {
@@ -123,18 +124,15 @@
       border: 2px solid var(--neon-pink);
       background: rgba(255, 45, 120, 0.08);
       color: #fff0f6;
-      font-size: clamp(17px, 4.6vw, 22px);
       font-weight: 700;
       letter-spacing: 1px;
-      padding: 16px 32px;
-      min-height: 56px;
       border-radius: 50px;
       text-shadow: 0 0 8px var(--neon-glow);
       touch-action: manipulation;
       box-shadow:
         0 0 12px rgba(255, 45, 120, 0.6),
         inset 0 0 12px rgba(255, 45, 120, 0.25);
-      transition: transform 0.18s ease, box-shadow 0.25s ease, background 0.25s ease;
+      transition: all 0.3s ease;
       animation: btnPulse 2s ease-in-out infinite;
       position: relative;
     }
@@ -152,13 +150,19 @@
       50%      { box-shadow: 0 0 24px rgba(255,45,120,0.9), inset 0 0 18px rgba(255,45,120,0.4); }
     }
 
-    .btn-nao {
-      position: fixed;
-      transition: none;
-      animation: none;
+    #btn-sim {
+      font-size: clamp(16px, 4.2vw, 22px);
+      padding: 14px 28px;
+      min-height: 52px;
     }
-    .btn-nao:hover { transform: none !important; }
-    .btn-nao:active { transform: none !important; }
+
+    #btn-nao {
+      font-size: clamp(14px, 3.8vw, 18px);
+      padding: 12px 24px;
+      min-height: 48px;
+      opacity: 0.8;
+    }
+    #btn-nao:hover { opacity: 1; }
 
     .burst-heart {
       position: absolute;
@@ -306,16 +310,30 @@
       }
     }
 
-    // ---------- lógica da proposta ----------
+    // ---------- lógica da proposta com múltiplas telas ----------
     const stage = document.getElementById('stage');
 
+    const perguntas = [
+      "Você aceita ser minha pra sempre?",
+      "Tem certeza que é não? 🥺",
+      "Me dá uma chance... 💔",
+      "Vem cá, reconsdera... 😢",
+      "Você vai quebrar meu coração? 💔",
+      "Uma última chance? 🙏💗"
+    ];
+
+    let telaAtual = 0;
+
     function renderProposta() {
+      const pergunta = perguntas[Math.min(telaAtual, perguntas.length - 1)];
+      const tamanhoSimFator = 1 + (telaAtual * 0.25); // aumenta 25% a cada tela
+
       stage.innerHTML = `
         <div class="big-heart">💕</div>
-        <h1 class="pergunta">Você aceita ser minha pra sempre?</h1>
+        <h1 class="pergunta">${pergunta}</h1>
         <div class="buttons-container">
-          <button class="btn" id="btn-sim">Sim 💗</button>
-          <button class="btn btn-nao" id="btn-nao">Não</button>
+          <button class="btn" id="btn-sim" style="font-size: clamp(${16 * tamanhoSimFator}px, calc(4.2vw * ${tamanhoSimFator}), ${22 * tamanhoSimFator}px); padding: ${14 * tamanhoSimFator}px ${28 * tamanhoSimFator}px; min-height: ${52 * tamanhoSimFator}px;">Sim 💗</button>
+          <button class="btn" id="btn-nao">Não</button>
         </div>
       `;
 
@@ -324,17 +342,20 @@
 
       // sim: explosão + spotify
       btnSim.addEventListener('click', (e) => {
-        heartBurst(e.clientX, e.clientY, 50);
+        heartBurst(e.clientX || window.innerWidth / 2, e.clientY || window.innerHeight / 2, 50);
         setTimeout(() => heartBurst(window.innerWidth / 2, window.innerHeight * 0.45, 30), 150);
         renderRespostaSimm();
       });
 
-      // não: foge
+      // não: vai para próxima tela
       btnNao.addEventListener('click', () => {
-        const newX = Math.random() * (window.innerWidth - 120);
-        const newY = Math.random() * (window.innerHeight - 80);
-        btnNao.style.left = newX + 'px';
-        btnNao.style.top = newY + 'px';
+        telaAtual++;
+        if (telaAtual < perguntas.length) {
+          renderProposta();
+        } else {
+          // após todas as telas, ainda permite dizer não, mas continua aparecendo a última pergunta
+          renderProposta();
+        }
       });
     }
 

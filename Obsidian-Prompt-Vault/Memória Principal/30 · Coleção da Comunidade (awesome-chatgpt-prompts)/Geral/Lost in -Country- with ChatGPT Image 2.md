@@ -1,0 +1,26 @@
+---
+title: "Lost in [Country] with ChatGPT Image 2"
+category: "Coleção da Comunidade"
+subcategory: "Geral"
+tags:
+  - prompt
+  - community
+  - awesome-chatgpt-prompts
+  - general
+type: text
+difficulty: intermediate
+source: "awesome-chatgpt-prompts"
+---
+
+# Lost in [Country] with ChatGPT Image 2
+
+> [!info] Como usar
+> Prompt da coleção comunitária [awesome-chatgpt-prompts](https://github.com/f/awesome-chatgpt-prompts) (licença CC0). Substitua os trechos entre aspas/colchetes pelo seu conteúdo.
+
+## Prompt
+
+```
+Create a stylized travel poster / graphic collage for ${country}. The main subject should be a stylish international tourist visiting ${country}, clearly presented as a traveler and not a local resident. Show the tourist wearing modern travel fashion, with details such as a camera, backpack, sunglasses, map, or suitcase, exploring the culture and atmosphere of ${country}. Place the tourist in a dynamic composition surrounded by iconic architecture, streets, landscapes, landmarks, transportation, food, signage, and cultural elements associated with ${country}. Blend realistic character detail with a graphic collage background made of layered paper textures, torn poster edges, sticker elements, halftone dots, editorial typography, and bold geometric shapes. Include authentic visual motifs from ${country}, but keep the tourist’s appearance and styling globally fashionable and clearly foreign to the setting. Add a large readable headline: “LOST IN ${country}”. Modern, artistic, premium editorial travel poster aesthetic, balanced layout, print-worthy composition.
+```
+
+— contribuído por `semihkislar`

@@ -398,10 +398,9 @@
   var tabs = $('#calc-systems'), form = $('#calc-form'), campos = $('#calc-fields'), desc = $('#calc-desc'), res = $('#calc-result');
 
   tabs.innerHTML = C.SISTEMAS.map(function (s, i) {
-    return '<button class="calc-tab" type="button" role="tab" id="tab-' + s.id + '" aria-controls="calc-form" data-sys="' + s.id + '" aria-selected="' + (s.id === calc.sistema) + '" tabindex="' + (s.id === calc.sistema ? 0 : -1) + '">' +
+    return '<button class="calc-tab" type="button" id="tab-' + s.id + '" aria-controls="calc-form" data-sys="' + s.id + '" aria-pressed="' + (s.id === calc.sistema) + '">' +
       '<small>' + String(i + 1).padStart(2, '0') + '</small>' + esc(s.curto) + '</button>';
   }).join('');
-  form.setAttribute('role', 'tabpanel');
 
   function campoHtml(nome, rotulo, un, dica) {
     return '<div class="field"><label for="c-' + nome + '"><span>' + rotulo + '</span></label>' +
@@ -412,9 +411,9 @@
     var s = C.sistema(calc.sistema);
     $$('.calc-tab', tabs).forEach(function (t) {
       var on = t.getAttribute('data-sys') === s.id;
-      t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1;
+      t.setAttribute('aria-pressed', String(on));
     });
-    form.setAttribute('aria-labelledby', 'tab-' + s.id);
+    form.setAttribute('aria-label', 'Medidas — ' + s.nome);
     desc.textContent = s.desc;
     campos.innerHTML = s.entrada === 'dimensoes'
       ? campoHtml('altura', 'Altura', 'm', 'Máximo de ' + fmt(s.alturaMax) + ' m para este sistema.') + campoHtml('comprimento', 'Comprimento', 'm', 'Soma dos trechos, em metros.')
@@ -426,13 +425,6 @@
     if (foco) { var f = $('input', campos); if (f) f.focus({ preventScroll: true }); }
   }
   tabs.addEventListener('click', function (ev) { var b = ev.target.closest('[data-sys]'); if (b) selecionarSistema(b.getAttribute('data-sys')); });
-  tabs.addEventListener('keydown', function (ev) {
-    var ids = C.SISTEMAS.map(function (s) { return s.id; }), i = ids.indexOf(calc.sistema);
-    var n = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: ids.length - 1 }[ev.key];
-    if (n === undefined) return;
-    ev.preventDefault(); n = (n + ids.length) % ids.length;
-    selecionarSistema(ids[n]); $('#tab-' + ids[n]).focus();
-  });
   campos.addEventListener('input', function (ev) {
     if (!ev.target.name) return;
     calc.valores[ev.target.name] = ev.target.value;

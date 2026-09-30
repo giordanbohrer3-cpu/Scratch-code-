@@ -87,5 +87,12 @@
       detalhe: 'Arremate de perímetro do forro junto às paredes.' }
   ];
 
-  root.DRYSUL = { loja: loja, categorias: categorias, produtos: produtos };
+  // Central de vendas: pedidos com preço, sem cálculo de obra e até este valor podem ser comprados no site.
+  // Acima disso, com estimativa da calculadora ou item sob consulta, o pedido segue para o WhatsApp.
+  var vendas = {
+    limiteOnline: 500,  // R$ — valor a definir com a loja
+    demo: true          // demonstração: nenhum pagamento é processado
+  };
+
+  root.DRYSUL = { loja: loja, categorias: categorias, produtos: produtos, vendas: vendas };
 })(typeof self !== 'undefined' ? self : this);

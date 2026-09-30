@@ -20,7 +20,9 @@
   var toggle = $('#motion-toggle');
   function updateToggle() {
     if (!toggle) return;
-    $('span', toggle).textContent = on ? 'Pausar efeitos' : 'Ativar efeitos';
+    var label = on ? 'Pausar efeitos' : 'Ativar efeitos';
+    $('span', toggle).textContent = label;
+    toggle.setAttribute('aria-label', label);
     $('use', toggle).setAttribute('href', on ? '#i-pause' : '#i-play');
     toggle.title = mqReduce.matches && !pref() ? 'Seu dispositivo pede menos movimento — efeitos reduzidos' : '';
   }
@@ -188,6 +190,7 @@
   TechCanvas.prototype.draw = function (t) {
     var c = this.ctx, w = this.w, h = this.h, dark = this.dark;
     if (!w || !h) return;
+    if (!this.live) { this.live = true; this.cv.classList.add('is-live'); }
     c.clearRect(0, 0, w, h);
     var minor = 24, major = 120, off = (t * 0.008) % major;
     var ink = dark ? '216,217,210' : '16,22,43';
@@ -265,6 +268,13 @@
 
   /* ---------- início ---------- */
   updateToggle();
-  if (on) { startCanvas(); requestUpdate(); } else drawStatic();
+  function startWhenIdle() {
+    var go = function () { if (on) startCanvas(); };
+    if ('requestIdleCallback' in window) requestIdleCallback(go, { timeout: 1500 }); else setTimeout(go, 600);
+  }
+  if (on) {
+    requestUpdate();
+    if (document.readyState === 'complete') startWhenIdle(); else window.addEventListener('load', startWhenIdle, { once: true });
+  } else drawStatic();
   window.DrysulMotion = { refresh: observeReveals, isOn: function () { return on; } };
 })();

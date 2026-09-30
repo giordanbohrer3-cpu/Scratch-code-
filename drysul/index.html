@@ -20,8 +20,8 @@
   <meta name="twitter:card" content="summary_large_image">
 
   <link rel="preload" href="assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/styles.css?v=1">
-  <link rel="stylesheet" href="css/motion.css?v=1">
+  <link rel="stylesheet" href="css/styles.css?v=2">
+  <link rel="stylesheet" href="css/motion.css?v=2">
   <script>
     (function () {
       var root = document.documentElement, pref = null;
@@ -73,8 +73,8 @@
     <div class="wrap demo-bar__in">
       <p class="demo-bar__txt"><span class="demo-tag">Demo</span> Proposta de site para a Drysul <span class="hide-sm">· preços e disponibilidade confirmados no atendimento</span></p>
       <div class="demo-bar__actions">
-        <button class="demo-btn" type="button" data-open="sobre-demo"><svg class="ic"><use href="#i-info"/></svg><span>Sobre a demo</span></button>
-        <button class="demo-btn" type="button" id="motion-toggle"><svg class="ic"><use href="#i-pause"/></svg><span>Pausar efeitos</span></button>
+        <button class="demo-btn" type="button" data-open="sobre-demo" aria-label="Sobre a demo"><svg class="ic"><use href="#i-info"/></svg><span>Sobre a demo</span></button>
+        <button class="demo-btn" type="button" id="motion-toggle" aria-label="Pausar efeitos"><svg class="ic"><use href="#i-pause"/></svg><span>Pausar efeitos</span></button>
       </div>
     </div>
   </div>
@@ -178,7 +178,8 @@
     </section>
 
     <!-- MARQUEE -->
-    <div class="marquee" aria-label="Drywall, gesso, estrutura, acabamento e fixação">
+    <div class="marquee">
+      <p class="sr">Drywall, gesso, estrutura, acabamento e fixação</p>
       <div class="marquee__track" aria-hidden="true">
         <span>Drywall</span><i></i><span>Gesso</span><i></i><span>Estrutura</span><i></i><span>Acabamento</span><i></i><span>Fixação</span><i></i>
         <span>Drywall</span><i></i><span>Gesso</span><i></i><span>Estrutura</span><i></i><span>Acabamento</span><i></i><span>Fixação</span><i></i>
@@ -278,7 +279,7 @@
         </header>
 
         <div class="calc__panel" data-reveal>
-          <div class="calc__systems" role="tablist" aria-label="Sistema construtivo" id="calc-systems"></div>
+          <div class="calc__systems" role="group" aria-label="Sistema construtivo" id="calc-systems"></div>
           <form class="calc__form" id="calc-form" novalidate>
             <p class="calc__desc" id="calc-desc"></p>
             <div class="calc__fields" id="calc-fields"></div>
@@ -594,9 +595,9 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/data.js?v=1"></script>
-  <script src="js/calculator-model.js?v=1"></script>
-  <script src="js/app.js?v=1"></script>
-  <script src="js/motion.js?v=1"></script>
+  <script defer src="js/data.js?v=2"></script>
+  <script defer src="js/calculator-model.js?v=2"></script>
+  <script defer src="js/app.js?v=2"></script>
+  <script defer src="js/motion.js?v=2"></script>
 </body>
 </html>

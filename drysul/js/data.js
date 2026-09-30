@@ -1,6 +1,6 @@
 /* Drysul — dados da loja, categorias, produtos e ofertas.
    Fonte única: contato, preços e ofertas são lidos daqui por toda a página.
-   Preço null = "sob consulta". Para usar foto real, preencha `foto` com o caminho da imagem. */
+   Preço null = "sob consulta". Foto real: `foto` (800 px, 4:3) e `fotoMini` (400 px); sem foto, aparece o desenho técnico. */
 (function (root) {
   'use strict';
 
@@ -31,13 +31,13 @@
 
   var produtos = [
     // Linha Drysul — preços informados pela loja (30/09/2026)
-    { id: 'fita', nome: 'Fita de papel perfurada Drysul', cat: 'acabamento', icone: 'p-fita',
+    { id: 'fita', foto: 'assets/img/prod-fita-800.webp', fotoMini: 'assets/img/prod-fita-400.webp', nome: 'Fita de papel perfurada Drysul', cat: 'acabamento', icone: 'p-fita',
       emb: 'Rolo', un: 'rolo', preco: 65.00, fonte: PRECO_LOJA, destaque: true,
       detalhe: 'Para tratamento de juntas entre chapas. Medidas do rolo confirmadas no atendimento.' },
-    { id: 'parafuso', nome: 'Parafusos para drywall Drysul', cat: 'fixacao', icone: 'p-caixa',
+    { id: 'parafuso', foto: 'assets/img/prod-parafuso-800.webp', fotoMini: 'assets/img/prod-parafuso-400.webp', nome: 'Parafusos para drywall Drysul', cat: 'fixacao', icone: 'p-caixa',
       emb: 'Caixa com 1.000 unidades', un: 'caixa', preco: 27.99, fonte: PRECO_LOJA, destaque: true,
       detalhe: 'Fixação de chapas na estrutura. Bitola e comprimento confirmados no atendimento.' },
-    { id: 'massa', nome: 'Massa para drywall Drysul', cat: 'acabamento', icone: 'p-balde',
+    { id: 'massa', foto: 'assets/img/prod-massa-800.webp', fotoMini: 'assets/img/prod-massa-400.webp', nome: 'Massa para drywall Drysul', cat: 'acabamento', icone: 'p-balde',
       emb: 'Balde de 25 kg', un: 'balde', preco: 54.99, fonte: PRECO_LOJA, destaque: true,
       detalhe: 'Tratamento de juntas e acabamento de superfícies em drywall.' },
 

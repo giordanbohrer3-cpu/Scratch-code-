@@ -20,8 +20,8 @@
   <meta name="twitter:card" content="summary_large_image">
 
   <link rel="preload" href="assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/styles.css?v=3">
-  <link rel="stylesheet" href="css/motion.css?v=3">
+  <link rel="stylesheet" href="css/styles.css?v=5">
+  <link rel="stylesheet" href="css/motion.css?v=5">
   <script>
     (function () {
       var root = document.documentElement, pref = null;
@@ -61,6 +61,9 @@
     <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3.5 5 6v5.5c0 4.3 3 7.8 7 9 4-1.2 7-4.7 7-9V6z"/><path d="m9 12 2.2 2.2L15.5 10"/></symbol>
     <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5M12 14.5v2.5"/></symbol>
     <symbol id="i-bag" viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6zM9 8V6.5a3 3 0 0 1 6 0V8"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 10.5l5 5 5-5M5 19.5h14"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8.5V4h10v4.5M7 16.5H5a1.5 1.5 0 0 1-1.5-1.5v-5A1.5 1.5 0 0 1 5 8.5h14a1.5 1.5 0 0 1 1.5 1.5v5a1.5 1.5 0 0 1-1.5 1.5h-2"/><path d="M7 13.5h10V20H7z"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><circle cx="17.5" cy="6" r="2.5"/><circle cx="6.5" cy="12" r="2.5"/><circle cx="17.5" cy="18" r="2.5"/><path d="m8.7 10.8 6.6-3.6M8.7 13.2l6.6 3.6"/></symbol>
     <symbol id="i-ext" viewBox="0 0 24 24"><path d="M14 5h5v5M19 5l-8 8M17 14v4.5a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 4 18.5v-10A1.5 1.5 0 0 1 5.5 7H10"/></symbol>
 
     <symbol id="p-chapa" viewBox="0 0 120 90"><path d="M14 62 64 44l42 12-50 18z"/><path d="M14 62v5l42 12v-5M56 79l50-18v-5"/><path d="M14 51 64 33l42 12-50 18z" opacity=".6"/><path d="M14 40 64 22l42 12-50 18z" opacity=".35"/><path d="M35 55.5 85 37.5" stroke-dasharray="3 4" opacity=".6"/></symbol>
@@ -549,6 +552,7 @@
             <a class="btn btn--outline btn--sm" href="#produtos" data-close>Ver catálogo</a>
             <a class="btn btn--outline btn--sm" href="#calculadora" data-close>Calculadora</a>
           </div>
+          <button class="btn btn--sm btn--outline" type="button" id="q-last-receipt" hidden><svg class="ic"><use href="#i-check"/></svg><span>Ver comprovante</span></button>
         </div>
         <div class="quote-sum" id="quote-sum" hidden></div>
         <div class="quote-fields">
@@ -635,6 +639,20 @@
     </div>
   </dialog>
 
+  <!-- Comprovante (reabrir) -->
+  <dialog class="sheet sheet--checkout" id="comprovante" aria-labelledby="rc-title">
+    <div class="sheet__in">
+      <header class="sheet__head">
+        <div>
+          <p class="eyebrow">Seu pedido</p>
+          <h2 class="sheet__title" id="rc-title">Comprovante</h2>
+        </div>
+        <button class="icon-btn" type="button" data-close aria-label="Fechar comprovante"><svg class="ic"><use href="#i-close"/></svg></button>
+      </header>
+      <div class="sheet__body" id="rc-body"></div>
+    </div>
+  </dialog>
+
   <!-- Diálogo sobre a demo -->
   <dialog class="sheet sheet--center" id="sobre-demo" aria-labelledby="about-demo-title">
     <div class="sheet__in">
@@ -651,15 +669,16 @@
         <ul class="check">
           <li>Logotipo, cores, padrão gráfico e fotos do manual da marca</li>
           <li>Endereço, telefone/WhatsApp e Instagram da loja</li>
-          <li>Preços da linha Drysul (fita, parafusos e massa) informados em 30/09/2026</li>
+          <li>Preços e fotos da linha Drysul (fita, parafusos e massa), preços informados em 30/09/2026</li>
           <li>Cinco ofertas publicadas no Instagram, com link para cada publicação</li>
         </ul>
         <h3>Para a versão final</h3>
         <ul class="todo-list">
-          <li>Fotos originais dos produtos (os desenhos atuais são provisórios)</li>
+          <li>Fotos dos demais produtos (os desenhos técnicos são provisórios)</li>
           <li>Catálogo completo com preços, marcas e medidas</li>
           <li>Cidade/CEP, horário de atendimento e área de entrega</li>
           <li>Pagamento real: conta no provedor (ex.: Mercado Pago ou PagBank) no CNPJ da loja e um pequeno servidor que confere preços e confirma pagamentos</li>
+          <li>Comprovante emitido pelo servidor só após a confirmação do provedor, com código assinado e cópia por e-mail</li>
           <li>Domínio próprio (ex.: drysul.com.br) e publicação definitiva</li>
         </ul>
         <p class="muted">Nesta demonstração nenhum pagamento é cobrado e nenhum dado é enviado. Na versão final, o cartão é digitado apenas no ambiente seguro do provedor de pagamento.</p>
@@ -669,11 +688,12 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script defer src="js/data.js?v=3"></script>
-  <script defer src="js/calculator-model.js?v=3"></script>
-  <script defer src="js/checkout-model.js?v=3"></script>
-  <script defer src="js/app.js?v=3"></script>
-  <script defer src="js/checkout.js?v=3"></script>
-  <script defer src="js/motion.js?v=3"></script>
+  <script defer src="js/data.js?v=5"></script>
+  <script defer src="js/calculator-model.js?v=5"></script>
+  <script defer src="js/checkout-model.js?v=5"></script>
+  <script defer src="js/app.js?v=5"></script>
+  <script defer src="js/receipt.js?v=5"></script>
+  <script defer src="js/checkout.js?v=5"></script>
+  <script defer src="js/motion.js?v=5"></script>
 </body>
 </html>

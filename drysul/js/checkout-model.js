@@ -67,7 +67,39 @@
     return 'DS-' + dd + mm + '-' + sufixo;
   }
 
+  // Comprovante: dados pessoais mascarados (o comprovante costuma ser compartilhado)
+  function mascararTelefone(s) {
+    var d = String(s || '').replace(/\D/g, '');
+    if (d.length === 13 && d.indexOf('55') === 0) d = d.slice(2);
+    if (d.length < 10) return '';
+    return '(' + d.slice(0, 2) + ') ' + (d.length === 11 ? d[2] + '••••' : '••••') + '-' + d.slice(-4);
+  }
+  function mascararEmail(s) {
+    var m = /^([^@\s]+)@([^@\s]+)$/.exec(String(s || '').trim());
+    if (!m) return '';
+    return m[1].slice(0, Math.min(2, m[1].length)) + '•••@' + m[2];
+  }
+
+  // Código de verificação do comprovante: resumo do conteúdo (FNV-1a de 2 × 32 bits).
+  // Na versão final, o código vem assinado pelo servidor da loja (HMAC), e a loja confere no painel.
+  function codigoVerificacao(texto) {
+    var s = String(texto), h1 = 0x811c9dc5, h2 = 0x01000193 ^ s.length;
+    for (var i = 0; i < s.length; i++) {
+      var c = s.charCodeAt(i);
+      h1 = Math.imul(h1 ^ c, 0x01000193) >>> 0;
+      h2 = Math.imul(h2 ^ c, 0x5bd1e995) >>> 0;
+    }
+    var hex = (h1.toString(16).padStart(8, '0') + h2.toString(16).padStart(8, '0')).toUpperCase();
+    return hex.slice(0, 4) + '-' + hex.slice(4, 8) + '-' + hex.slice(8, 12);
+  }
+  function conteudoComprovante(r) {
+    return [r.numero, r.dataISO, r.status, r.pagamento, r.total.toFixed(2),
+      r.itens.map(function (i) { return i.id + ':' + i.qtd + ':' + i.unit.toFixed(2); }).join(',')].join('|');
+  }
+
   return {
+    mascararTelefone: mascararTelefone, mascararEmail: mascararEmail,
+    codigoVerificacao: codigoVerificacao, conteudoComprovante: conteudoComprovante,
     QTD_MAX: QTD_MAX, avaliar: avaliar, textoMotivo: textoMotivo,
     telefoneValido: telefoneValido, formatarTelefone: formatarTelefone, emailValido: emailValido,
     numeroPedido: numeroPedido

@@ -20,8 +20,8 @@
   <meta name="twitter:card" content="summary_large_image">
 
   <link rel="preload" href="assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/styles.css?v=5">
-  <link rel="stylesheet" href="css/motion.css?v=5">
+  <link rel="stylesheet" href="css/styles.css?v=7">
+  <link rel="stylesheet" href="css/motion.css?v=7">
   <script>
     (function () {
       var root = document.documentElement, pref = null;
@@ -138,48 +138,34 @@
         </div>
 
         <figure class="hero__art" aria-hidden="true">
-          <svg class="build" viewBox="0 0 560 600" fill="none">
-            <g class="build__frame" stroke="currentColor">
-              <path d="M24 24h28M24 24v28M536 24h-28M536 24v28M24 576h28M24 576v-28M536 576h-28M536 576v-28" stroke-width="1.5" opacity=".5"/>
-            </g>
-            <g class="build__dims" stroke="currentColor" stroke-width="1" opacity=".55">
-              <path d="M94 40h120M94 34v12M214 34v12" />
-              <path d="M518 72v456M512 72h12M512 528h12" />
-            </g>
-            <text class="build__txt" x="154" y="31" text-anchor="middle">600 mm</text>
-            <text class="build__txt" x="0" y="0" transform="translate(538 300) rotate(90)" text-anchor="middle">2,80 m</text>
-
-            <g class="build__studs" stroke="currentColor" stroke-width="1.6">
-              <path class="draw" pathLength="1" d="M60 60h440v12H60zM60 528h440v12H60z"/>
-              <path class="draw" pathLength="1" d="M87 72v456M101 72v456M207 72v456M221 72v456M327 72v456M341 72v456M447 72v456M461 72v456"/>
-              <path d="M91 72v456M217 72v456M331 72v456M457 72v456" opacity=".35" stroke-width="1"/>
-            </g>
-
-            <g class="build__layer build__layer--back" data-layer="back">
-              <rect x="60" y="72" width="200" height="456" fill="#D8D9D2" fill-opacity=".92"/>
-              <path d="M60 72h200v456H60z" stroke="#fff" stroke-opacity=".6"/>
-              <g fill="#10162b" fill-opacity=".45">
-                <circle cx="94" cy="110" r="2.2"/><circle cx="94" cy="200" r="2.2"/><circle cx="94" cy="290" r="2.2"/><circle cx="94" cy="380" r="2.2"/><circle cx="94" cy="470" r="2.2"/>
-                <circle cx="214" cy="110" r="2.2"/><circle cx="214" cy="200" r="2.2"/><circle cx="214" cy="290" r="2.2"/><circle cx="214" cy="380" r="2.2"/><circle cx="214" cy="470" r="2.2"/>
-              </g>
-            </g>
-            <g class="build__layer build__layer--front" data-layer="front">
-              <rect x="262" y="72" width="200" height="456" fill="#EDEDE7" fill-opacity=".95"/>
-              <path d="M262 72h200v456H262z" stroke="#fff" stroke-opacity=".7"/>
-              <g fill="#10162b" fill-opacity=".45">
-                <circle cx="334" cy="130" r="2.2"/><circle cx="334" cy="220" r="2.2"/><circle cx="334" cy="310" r="2.2"/><circle cx="334" cy="400" r="2.2"/><circle cx="334" cy="490" r="2.2"/>
-              </g>
-            </g>
-            <rect class="build__tape" x="252" y="72" width="18" height="456" fill="#EF5023"/>
-
-            <g class="build__labels">
-              <g class="lbl" style="--i:0"><path d="M470 66h40" stroke="currentColor"/><circle cx="470" cy="66" r="3" fill="#EF5023"/><text x="0" y="0" transform="translate(470 54)">GUIA 70</text></g>
-              <g class="lbl" style="--i:1"><path d="M454 180h54" stroke="currentColor"/><circle cx="454" cy="180" r="3" fill="#EF5023"/><text x="0" y="0" transform="translate(466 170)">MONTANTE</text></g>
-              <g class="lbl lbl--dark" style="--i:2"><path d="M150 250h60" stroke="#10162b"/><circle cx="150" cy="250" r="3" fill="#EF5023"/><text x="0" y="0" transform="translate(106 240)">CHAPA ST</text></g>
-              <g class="lbl lbl--dark" style="--i:3"><path d="M261 420h-80" stroke="#10162b"/><circle cx="261" cy="420" r="3" fill="#10162b"/><text x="0" y="0" transform="translate(106 410)">FITA + MASSA</text></g>
-            </g>
-          </svg>
-          <figcaption class="hero__caption"><span>Parede drywall</span> estrutura · chapa · tratamento de juntas</figcaption>
+          <div class="hero__stage">
+          <div class="wall" id="wall">
+            <div class="wall__rig" id="wall-rig">
+              <div class="wl wl--back"></div>
+              <svg class="wl wl--frame" viewBox="-12 -16 424 512" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="aco" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#7C828E"/><stop offset=".45" stop-color="#D9DCE1"/><stop offset=".55" stop-color="#C3C7CE"/><stop offset="1" stop-color="#6E747F"/></linearGradient>
+                  <linearGradient id="acoH" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#7C828E"/><stop offset=".5" stop-color="#D2D5DA"/><stop offset="1" stop-color="#6E747F"/></linearGradient>
+                </defs>
+                <g fill="url(#aco)" stroke="#2A3050" stroke-width=".8">
+                  <rect x="-6" y="-10" width="12" height="500"/><rect x="94" y="-10" width="12" height="500"/><rect x="194" y="-10" width="12" height="500"/><rect x="294" y="-10" width="12" height="500"/><rect x="394" y="-10" width="12" height="500"/>
+                </g>
+                <g fill="none" stroke="#2A3050" stroke-width=".8" opacity=".6"><path d="M-2-10v500M98-10v500M198-10v500M298-10v500M398-10v500"/></g>
+                <g fill="url(#acoH)" stroke="#2A3050" stroke-width=".8"><rect x="-12" y="-16" width="424" height="12"/><rect x="-12" y="484" width="424" height="12"/></g>
+                <g class="wl-dim" stroke="#D8D9D2" stroke-width="1" fill="none" opacity=".75"><path d="M106 30h88M106 24v12M194 24v12"/></g>
+                <text class="wl-dimtxt" x="150" y="22" text-anchor="middle">600 mm</text>
+              </svg>
+              <div class="wl wl--screws" id="wall-screws"></div>
+              <div class="wl wl--plate wl--plate-a"><span class="wl-print">drysul · drywall ST 12,5 mm</span><span class="wl-label wl-label--chapa">Chapa ST 12,5</span></div>
+              <div class="wl wl--plate wl--plate-b"><span class="wl-print">drysul · drywall ST 12,5 mm</span></div>
+              <div class="wl wl--tape"><span class="wl-label wl-label--fita">Fita + massa</span></div>
+              <span class="wl-label wl-label--guia">Guia 70</span>
+              <span class="wl-label wl-label--montante">Montante 70</span>
+              <span class="wl-label wl-label--parafuso">Parafuso TA 25</span>
+            </div>
+          </div>
+          <figcaption class="hero__caption"><span>Parede drywall</span> <em class="cap-anim">role a página e veja a montagem por dentro</em><em class="cap-static">estrutura, parafusos e chapas</em></figcaption>
+          </div>
         </figure>
       </div>
       <a class="scroll-cue" href="#categorias" aria-label="Rolar para as categorias"><span></span></a>
@@ -688,12 +674,12 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script defer src="js/data.js?v=5"></script>
-  <script defer src="js/calculator-model.js?v=5"></script>
-  <script defer src="js/checkout-model.js?v=5"></script>
-  <script defer src="js/app.js?v=5"></script>
-  <script defer src="js/receipt.js?v=5"></script>
-  <script defer src="js/checkout.js?v=5"></script>
-  <script defer src="js/motion.js?v=5"></script>
+  <script defer src="js/data.js?v=7"></script>
+  <script defer src="js/calculator-model.js?v=7"></script>
+  <script defer src="js/checkout-model.js?v=7"></script>
+  <script defer src="js/app.js?v=7"></script>
+  <script defer src="js/receipt.js?v=7"></script>
+  <script defer src="js/checkout.js?v=7"></script>
+  <script defer src="js/motion.js?v=7"></script>
 </body>
 </html>

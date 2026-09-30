@@ -69,7 +69,59 @@
 
   /* ---------- parallax e camadas ---------- */
   var parallax = $$('[data-parallax]'), photos = $$('[data-parallax-img]'), drift = $('[data-drift]');
-  var hero = $('.hero'), layers = $$('[data-layer]');
+  var hero = $('.hero');
+
+  /* ---------- parede drywall 3D do hero ----------
+     p = 0: parede montada. Rolando: a fita solta, a parede gira, as chapas se separam dos montantes
+     e os parafusos aparecem (de cima para baixo). Na carga, a parede se monta sozinha. */
+  var rig = $('#wall-rig'), art = $('.hero__art'), heroCanvas = $('.hero > .tech-canvas');
+  var parede = { alvo: 0, intro: false, estatica: 1 };
+  (function montarParafusos() {
+    var box = $('#wall-screws'); if (!box) return;
+    var cols = [100, 194, 206, 300], rows = [40, 120, 200, 280, 360, 440], html = ''; // bordas ficam na dobradiça das chapas
+    rows.forEach(function (y, r) {
+      cols.forEach(function (x, c) {
+        var d = r / rows.length * 0.68 + c * 0.018;
+        html += '<span class="sc" style="left:' + x + 'px;top:' + y + 'px;--z:34px;--d:' + d.toFixed(3) + '">' +
+          '<i class="sc__shaft"></i><i class="sc__head"></i></span>';
+      });
+    });
+    box.innerHTML = html;
+  })();
+  function suave(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+  function trecho(p, a, b) { return clamp((p - a) / (b - a), 0, 1); }
+  function aplicarParede(p) {
+    if (!rig) return;
+    var s = rig.style;
+    s.setProperty('--tape', suave(trecho(p, 0, 0.28)).toFixed(4));
+    s.setProperty('--sep', suave(trecho(p, 0.08, 0.6)).toFixed(4));
+    s.setProperty('--rot', suave(trecho(p, 0, 0.55)).toFixed(4));
+    var scr = trecho(p, 0.22, 1);
+    s.setProperty('--scr', scr.toFixed(4));
+    rig.classList.toggle('sem-parafusos', scr <= 0);
+    s.setProperty('--lab', suave(trecho(p, 0.5, 0.78)).toFixed(4));
+  }
+  function progressoParede() {
+    if (!rig || !art) return 0;
+    // início: quando a parede entra na tela; fim: quando o palco fixo termina (padding --pin)
+    var vh = window.innerHeight, y = window.scrollY;
+    var topoArte = art.getBoundingClientRect().top + y;
+    var fixo = parseFloat(getComputedStyle(art.firstElementChild).top) || 0;
+    var pin = parseFloat(getComputedStyle(art).getPropertyValue('--pin')) || 400;
+    var inicio = Math.max(0, topoArte - vh * 0.75), fim = topoArte - fixo + pin;
+    return clamp((y - inicio) / Math.max(1, fim - inicio), 0, 1);
+  }
+  function introParede() {
+    if (!rig || !on) return;
+    var t0 = performance.now(), de = 0.9, dur = 1400;
+    parede.intro = true;
+    (function passo(t) {
+      if (!on) { parede.intro = false; return; }
+      var k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+      aplicarParede(de + (parede.alvo - de) * e);
+      if (k < 1) requestAnimationFrame(passo); else { parede.intro = false; aplicarParede(parede.alvo); }
+    })(t0);
+  }
   var visible = new Set();
   var visIO = hasIO ? new IntersectionObserver(function (es) {
     es.forEach(function (e) { if (e.isIntersecting) visible.add(e.target); else visible.delete(e.target); });
@@ -105,18 +157,19 @@
       var dp = clamp((vh - dr.top) / (vh + dr.height), 0, 1);
       drift.style.transform = 'translate3d(' + (-dp * 22).toFixed(2) + 'vw,0,0)';
     }
-    if (hero && visible.has(hero) && layers.length) {
-      var hr = hero.getBoundingClientRect();
-      var hp = clamp(-hr.top / hr.height, 0, 1);
-      layers.forEach(function (g) {
-        var front = g.getAttribute('data-layer') === 'front';
-        var x = hp * (front ? 46 : 18) * k, y = -hp * (front ? 30 : 12) * k;
-        g.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px)';
-      });
+    if (heroCanvas && hero && visible.has(hero)) {
+      var hc = hero.getBoundingClientRect();
+      var desloc = clamp(-hc.top, 0, Math.max(0, hc.height - heroCanvas.offsetHeight));
+      heroCanvas.style.transform = 'translate3d(0,' + Math.round(desloc) + 'px,0)';
+    }
+    if (rig && hero && visible.has(hero)) {
+      parede.alvo = progressoParede();
+      if (!parede.intro) aplicarParede(parede.alvo);
     }
   }
   function resetTransforms() {
-    parallax.concat(photos, layers, drift ? [drift] : []).forEach(function (el) { el.style.transform = ''; });
+    parallax.concat(photos, drift ? [drift] : []).forEach(function (el) { el.style.transform = ''; });
+    if (rig) { aplicarParede(parede.estatica); rig.style.setProperty('--mx', 0); rig.style.setProperty('--my', 0); }
     $$('.is-tilting').forEach(function (el) { el.classList.remove('is-tilting'); el.style.transform = ''; });
     $$('[data-magnetic]').forEach(function (el) { el.style.transform = ''; });
   }
@@ -139,6 +192,10 @@
       var hr = hero.getBoundingClientRect();
       hero.style.setProperty('--px', ((ev.clientX - hr.left) / hr.width * 100).toFixed(1) + '%');
       hero.style.setProperty('--py', ((ev.clientY - hr.top) / hr.height * 100).toFixed(1) + '%');
+      if (rig) {
+        rig.style.setProperty('--mx', ((ev.clientX - hr.left) / hr.width * 2 - 1).toFixed(3));
+        rig.style.setProperty('--my', ((ev.clientY - hr.top) / hr.height * 2 - 1).toFixed(3));
+      }
     }
 
     var tilt = t && t.closest('[data-tilt]');
@@ -273,8 +330,10 @@
     if ('requestIdleCallback' in window) requestIdleCallback(go, { timeout: 1500 }); else setTimeout(go, 600);
   }
   if (on) {
+    parede.alvo = progressoParede();
+    introParede();
     requestUpdate();
     if (document.readyState === 'complete') startWhenIdle(); else window.addEventListener('load', startWhenIdle, { once: true });
-  } else drawStatic();
+  } else { drawStatic(); aplicarParede(parede.estatica); }
   window.DrysulMotion = { refresh: observeReveals, isOn: function () { return on; } };
 })();

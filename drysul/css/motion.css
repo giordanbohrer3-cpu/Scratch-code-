@@ -104,3 +104,5 @@
 @media (prefers-reduced-motion: reduce) {
   html:not(.motion-on) *, html:not(.motion-on) *::before, html:not(.motion-on) *::after { animation: none !important; transition-duration: 1ms !important; }
 }
+.motion-on .sheet--checkout[open] { animation: pop-in 380ms var(--ease) both; }
+.motion-on .co-step:not([hidden]) { animation: fade-up 360ms var(--ease) both; }

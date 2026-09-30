@@ -2,7 +2,7 @@
 (function () {
   'use strict';
 
-  var D = window.DRYSUL, C = window.DrysulCalc;
+  var D = window.DRYSUL, C = window.DrysulCalc, V = window.DrysulVendas;
   var loja = D.loja;
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
@@ -74,7 +74,7 @@
     if (l) l.qtd = Math.min(999, l.qtd + 1);
     else q.itens.push({ id: id, qtd: 1 });
     mudou(true);
-    toast(produtoPorId[id].nome + ' — adicionado ao orçamento', { label: 'Ver lista', run: abrirOrcamento });
+    toast(produtoPorId[id].nome + ' — adicionado ao pedido', { label: 'Ver pedido', run: abrirOrcamento });
   }
   function definirQtd(id, n) {
     var l = linha(id); if (!l) return;
@@ -141,10 +141,34 @@
   }
 
   /* ---------- diálogo ---------- */
-  var dlg = $('#orcamento'), retornoFoco = null;
+  var dlg = $('#orcamento');
   var atualizarFab = function () {};
   var elItens = $('#quote-items'), elEst = $('#quote-estimate'), elVazio = $('#quote-empty'), elSoma = $('#quote-sum');
   var inNome = $('#q-nome'), inObs = $('#q-obs'), btSend = $('#q-send'), btCopy = $('#q-copy'), fallback = $('#q-fallback');
+  var elRota = $('#q-route'), btBuy = $('#q-buy');
+
+  function avaliacao() { return V.avaliar(q, produtoPorId, D.vendas); }
+  function renderRota() {
+    var av = avaliacao(), online = av.canal === 'online';
+    elRota.hidden = av.canal === 'vazio';
+    btBuy.hidden = !online;
+    btSend.classList.toggle('btn--primary', !online);
+    btSend.classList.toggle('btn--outline', online);
+    $('span', btSend).textContent = online ? 'Prefiro o WhatsApp' : 'Enviar pelo WhatsApp';
+    if (av.canal === 'vazio') { elRota.innerHTML = ''; return; }
+    elRota.className = 'route ' + (online ? 'route--online' : 'route--whats');
+    elRota.innerHTML = online
+      ? icon('i-check') + '<div><b>Pode comprar direto pelo site</b><span>Pix ou cartão · retirada na loja ou entrega combinada</span></div>'
+      : icon('i-whats') + '<div><b>Este pedido segue pelo WhatsApp</b><ul>' + av.motivos.map(function (m) {
+          return '<li>' + esc(V.textoMotivo(m, D.vendas.limiteOnline, function (v) { return BRL.format(v); })) + '</li>';
+        }).join('') + '</ul></div>';
+  }
+  btBuy.addEventListener('click', function () {
+    if (avaliacao().canal !== 'online' || !window.DrysulCheckout) return;
+    var origem = dlg._retorno;
+    fecharDialogo(dlg);
+    window.DrysulCheckout.abrir(origem);
+  });
 
   function renderOrcamento() {
     elItens.innerHTML = q.itens.length ? '<ul class="q-list">' + q.itens.map(function (i) {
@@ -188,10 +212,11 @@
     btSend.setAttribute('aria-disabled', vazio ? 'true' : 'false');
     btCopy.disabled = vazio;
     fallback.hidden = true;
+    renderRota();
   }
 
-  function abrirOrcamento() {
-    retornoFoco = document.activeElement;
+  function abrirOrcamento(origem) {
+    dlg._retorno = origem instanceof Element ? origem : document.activeElement;
     fecharMenu();
     renderOrcamento();
     if (typeof dlg.showModal === 'function') dlg.showModal(); else dlg.setAttribute('open', '');
@@ -202,9 +227,10 @@
   }
   $$('dialog').forEach(function (d) {
     d.addEventListener('close', function () {
-      document.documentElement.classList.remove('dialog-open');
-      if (retornoFoco && document.contains(retornoFoco)) { try { retornoFoco.focus({ preventScroll: true }); } catch (e) {} }
-      retornoFoco = null;
+      var r = d._retorno, outroAberto = !!document.querySelector('dialog[open]');
+      d._retorno = null;
+      document.documentElement.classList.toggle('dialog-open', outroAberto);
+      if (!outroAberto && r && document.contains(r)) { try { r.focus({ preventScroll: true }); } catch (e) {} }
       atualizarFab();
     });
     d.addEventListener('click', function (ev) { if (ev.target === d) fecharDialogo(d); });
@@ -218,7 +244,7 @@
     var op = t.closest('[data-open]');
     if (op) {
       var alvo = document.getElementById(op.getAttribute('data-open'));
-      if (alvo) { retornoFoco = op; fecharMenu(); alvo.showModal ? alvo.showModal() : alvo.setAttribute('open', ''); }
+      if (alvo) { alvo._retorno = op; fecharMenu(); alvo.showModal ? alvo.showModal() : alvo.setAttribute('open', ''); }
       return;
     }
     var cl = t.closest('[data-close]');
@@ -231,7 +257,7 @@
     var a = b.getAttribute('data-q');
     if (a === 'inc') definirQtd(id, l.qtd + 1);
     else if (a === 'dec') { if (l.qtd > 1) definirQtd(id, l.qtd - 1); }
-    else if (a === 'rm') { remover(id); toast('Item removido do orçamento'); }
+    else if (a === 'rm') { remover(id); toast('Item removido do pedido'); }
   });
   elItens.addEventListener('change', function (ev) {
     if (ev.target.matches('input')) definirQtd(ev.target.closest('.q-item').getAttribute('data-id'), ev.target.value);
@@ -477,7 +503,7 @@
       var substituiu = !!q.estimativa;
       q.estimativa = { sistema: r.sistema, nome: r.nome, dims: r.dims, area: r.area, itens: r.itens };
       mudou(true);
-      toast(substituiu ? 'Estimativa atualizada no orçamento' : 'Estimativa adicionada ao orçamento', { label: 'Ver lista', run: abrirOrcamento });
+      toast(substituiu ? 'Estimativa atualizada no pedido' : 'Estimativa adicionada ao pedido', { label: 'Ver pedido', run: abrirOrcamento });
     } else {
       var txt = ['Estimativa Drysul — ' + r.nome + ', ' + descMedidas(r)].concat(r.itens.map(function (i) {
         return '• ' + i.nome + ': ' + fmt(i.qtd) + ' ' + i.unidade;
@@ -568,10 +594,25 @@
     atualizarFab = function () {
       var fab = $('#fab');
       fab.hidden = false;
-      fab.classList.toggle('is-hidden', heroVisivel || contatoVisivel || dlg.open || totalLinhas() === 0);
+      var co = document.getElementById('checkout');
+      fab.classList.toggle('is-hidden', heroVisivel || contatoVisivel || dlg.open || (co && co.open) || totalLinhas() === 0);
     };
   }
   atualizarContadores();
   atualizarBotoes();
-  window.DrysulApp = { abrirOrcamento: abrirOrcamento, estado: function () { return q; }, mensagem: mensagem };
+  function limparPedido() {
+    q.itens = []; q.estimativa = null; q.obs = '';
+    mudou();
+  }
+  window.DrysulApp = {
+    abrirOrcamento: abrirOrcamento, estado: function () { return q; }, mensagem: mensagem,
+    avaliacao: avaliacao, produto: function (id) { return produtoPorId[id]; },
+    limparPedido: limparPedido, toast: toast, copiar: copiar, BRL: BRL, esc: esc, ill: ill, icon: icon,
+    abrirDialogo: function (d, origem) {
+      d._retorno = origem || document.activeElement;
+      if (typeof d.showModal === 'function') d.showModal(); else d.setAttribute('open', '');
+      document.documentElement.classList.add('dialog-open'); atualizarFab();
+    },
+    fecharDialogo: fecharDialogo
+  };
 })();

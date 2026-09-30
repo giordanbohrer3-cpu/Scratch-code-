@@ -25,9 +25,13 @@
     return '<svg class="ill ' + (cls || '') + '" viewBox="0 0 120 90" aria-hidden="true" focusable="false"><use href="#' + id + '"/></svg>';
   }
   function midia(p, cls) {
-    return p.foto
-      ? '<img src="' + esc(p.foto) + '" alt="' + esc(p.nome) + '" loading="lazy" decoding="async">'
-      : ill(p.icone, cls);
+    if (!p.foto) return ill(p.icone, cls);
+    return '<img src="' + esc(p.foto) + '"' + (p.fotoMini ? ' srcset="' + esc(p.fotoMini) + ' 400w, ' + esc(p.foto) + ' 800w" sizes="(max-width: 720px) 50vw, 400px"' : '') +
+      ' width="800" height="600" alt="' + esc(p.nome + ' — ' + p.emb.toLowerCase()) + '" loading="lazy" decoding="async">';
+  }
+  function mini(p) {
+    if (!p.foto) return ill(p.icone);
+    return '<img class="mini" src="' + esc(p.fotoMini || p.foto) + '" width="104" height="78" alt="" loading="lazy" decoding="async">';
   }
   function precoPartes(v) {
     var s = BRL.format(v).replace(/ /g, ' ');
@@ -174,7 +178,7 @@
     elItens.innerHTML = q.itens.length ? '<ul class="q-list">' + q.itens.map(function (i) {
       var p = produtoPorId[i.id];
       var preco = p.preco != null ? BRL.format(p.preco) + ' / ' + p.un : 'Sob consulta';
-      return '<li class="q-item" data-id="' + esc(p.id) + '">' + ill(p.icone) +
+      return '<li class="q-item" data-id="' + esc(p.id) + '">' + mini(p) +
         '<div><p class="q-item__name">' + esc(p.nome) + '</p><p class="q-item__meta">' + esc(p.emb) + ' · ' + preco + '</p></div>' +
         '<div class="q-item__ctrl">' +
           '<button type="button" data-q="dec" aria-label="Diminuir quantidade de ' + esc(p.nome) + '">' + icon('i-minus') + '</button>' +
@@ -607,7 +611,7 @@
   window.DrysulApp = {
     abrirOrcamento: abrirOrcamento, estado: function () { return q; }, mensagem: mensagem,
     avaliacao: avaliacao, produto: function (id) { return produtoPorId[id]; },
-    limparPedido: limparPedido, toast: toast, copiar: copiar, BRL: BRL, esc: esc, ill: ill, icon: icon,
+    limparPedido: limparPedido, toast: toast, copiar: copiar, BRL: BRL, esc: esc, ill: ill, mini: mini, icon: icon,
     abrirDialogo: function (d, origem) {
       d._retorno = origem || document.activeElement;
       if (typeof d.showModal === 'function') d.showModal(); else d.setAttribute('open', '');

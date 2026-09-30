@@ -28,7 +28,7 @@
   function abrir(origem) {
     st.av = A.avaliacao();
     if (st.av.canal !== 'online') { A.toast('Este pedido segue pelo WhatsApp.'); A.abrirOrcamento(origem); return; }
-    st.numero = null; st.pago = false;
+    st.numero = null; st.pago = false; st.recibo = null;
     renderLinhas();
     irPara(1, false);
     A.abrirDialogo(dlg, origem);
@@ -37,7 +37,7 @@
   function renderLinhas() {
     elLinhas.innerHTML = st.av.linhas.map(function (l) {
       var p = A.produto(l.id);
-      return '<li class="co-line">' + A.ill(p.icone) +
+      return '<li class="co-line">' + A.mini(p) +
         '<div><p class="co-line__n">' + esc(p.nome) + '</p><p class="co-line__m">' + esc(p.emb) + ' · ' + l.qtd + ' × ' + BRL.format(p.preco) + '</p></div>' +
         '<b>' + BRL.format(l.total) + '</b></li>';
     }).join('');
@@ -102,23 +102,6 @@
     return true;
   }
 
-  /* ---------- mensagem do pedido ---------- */
-  function mensagemPedido() {
-    var pag = pagamento();
-    var L = ['Olá, Drysul! Pedido ' + st.numero + ' feito pelo site.', '', '*Itens*'];
-    st.av.linhas.forEach(function (l) {
-      var p = A.produto(l.id);
-      L.push('• ' + l.qtd + ' × ' + p.nome + ' — ' + p.emb.toLowerCase() + ' (' + BRL.format(p.preco) + '/' + p.un + ') = ' + BRL.format(l.total));
-    });
-    L.push('', 'Total dos produtos: ' + BRL.format(st.av.subtotal));
-    L.push('Recebimento: ' + (entrega() === 'entrega' ? 'entrega no endereço (combinar taxa)' : 'retirada na loja'));
-    L.push('Pagamento: ' + (st.pago ? NOMES_PAG[pag] + ' — aprovado (demonstração)' : NOMES_PAG[pag]));
-    L.push('', 'Nome: ' + valor('nome'), 'WhatsApp: ' + valor('telefone'));
-    if (valor('email')) L.push('E-mail: ' + valor('email'));
-    return L.join('\n').replace(/ /g, ' ');
-  }
-  function linkWhats() { return loja.whatsUrl + '?text=' + encodeURIComponent(mensagemPedido()); }
-
   /* ---------- resultado (etapa 4) ---------- */
   function qrDemo(seed) {
     var n = 25, s = 0, cells = '';
@@ -136,26 +119,32 @@
       '<g transform="rotate(-18 12.5 12.5)"><rect x="3" y="10" width="19" height="5.5" fill="#EF5023"/><text x="12.5" y="14.1" text-anchor="middle" font-size="3.6" font-weight="800" fill="#10162B" font-family="Archivo, sans-serif" letter-spacing=".3">DEMO</text></g></svg>';
   }
 
+  function comprovante(pago) {
+    return window.DrysulRecibo.montar({
+      numero: st.numero, pagamento: pagamento(), entrega: entrega(), pago: pago,
+      nome: valor('nome'), telefone: valor('telefone'), email: valor('email'),
+      linhas: st.av.linhas, total: st.av.subtotal
+    });
+  }
+  function renderComprovante(r, tituloTela, info) {
+    elRes.innerHTML = '<div class="co-ok">' + A.icon(r.status === 'pago' ? 'i-check' : 'i-whats') +
+      '<h3 class="co-h" tabindex="-1">' + esc(tituloTela) + '</h3><p class="co-ok__info">' + info + '</p></div><div id="co-rcpt"></div>';
+    window.DrysulRecibo.mostrar($('#co-rcpt', elRes), r);
+  }
+
   function renderResultado() {
     var pag = pagamento(), total = BRL.format(st.av.subtotal), num = esc(st.numero);
     if (st.pago) {
-      elRes.innerHTML = '<div class="co-ok">' + A.icon('i-check') +
-        '<h3 class="co-h" tabindex="-1">Pagamento aprovado</h3>' +
-        '<p>Pedido <b>' + num + '</b> · ' + total + ' · ' + esc(NOMES_PAG[pag]) + '</p>' +
-        '<p class="co-ok__info">' + (entrega() === 'entrega'
-          ? 'A equipe entra em contato pelo WhatsApp para combinar a entrega.'
-          : 'Retire na loja: ' + esc(loja.endereco) + ' — ' + esc(loja.bairro) + '. Informe o número do pedido.') + '</p>' +
-        (valor('email') ? '<p class="co-ok__info">Na versão final, o comprovante vai para ' + esc(valor('email')) + '.</p>' : '') +
-        '<a class="btn btn--outline" href="' + esc(linkWhats()) + '" target="_blank" rel="noopener">' + A.icon('i-whats') + '<span>Avisar a loja no WhatsApp</span></a>' +
-        '<p class="co-demo-note">Demonstração: nenhum valor foi cobrado.</p></div>';
+      renderComprovante(st.recibo, 'Pagamento aprovado',
+        'Guarde seu comprovante. ' + (entrega() === 'entrega'
+          ? 'A equipe chama você no WhatsApp para combinar a entrega.'
+          : 'Na retirada, informe o número do pedido e o código de verificação.') +
+        (valor('email') ? ' Na versão final, uma cópia vai para ' + esc(valor('email')) + '.' : ''));
       return;
     }
     if (pag === 'whatsapp') {
-      elRes.innerHTML = '<div class="co-ok">' + A.icon('i-whats') +
-        '<h3 class="co-h" tabindex="-1">Pedido enviado para o WhatsApp</h3>' +
-        '<p>Pedido <b>' + num + '</b> · ' + total + '</p>' +
-        '<p class="co-ok__info">A conversa abriu com o pedido pronto. A equipe confirma estoque, ' + (entrega() === 'entrega' ? 'taxa de entrega ' : '') + 'e forma de pagamento.</p>' +
-        '<a class="btn btn--outline" href="' + esc(linkWhats()) + '" target="_blank" rel="noopener">' + A.icon('i-whats') + '<span>Abrir o WhatsApp de novo</span></a></div>';
+      renderComprovante(st.recibo, 'Pedido enviado para o WhatsApp',
+        'A conversa abriu com o pedido pronto. A equipe confirma estoque' + (entrega() === 'entrega' ? ', taxa de entrega' : '') + ' e forma de pagamento.');
       return;
     }
     if (pag === 'pix') {
@@ -180,13 +169,17 @@
     if (st.etapa === 2) { if (validarDados()) irPara(3); return; }
     if (st.etapa === 3) {
       st.numero = V.numeroPedido();
-      if (pagamento() === 'whatsapp') window.open(linkWhats(), '_blank', 'noopener');
+      if (pagamento() === 'whatsapp') {
+        st.recibo = comprovante(false);
+        window.open(loja.whatsUrl + '?text=' + encodeURIComponent(window.DrysulRecibo.mensagemLoja(st.recibo)), '_blank', 'noopener');
+      }
       renderResultado(); irPara(4);
       return;
     }
     if (st.etapa === 4) {
       if (!st.pago && pagamento() !== 'whatsapp') {
         st.pago = true;
+        st.recibo = comprovante(true);
         A.limparPedido();
         renderResultado(); atualizarRodape();
         var h = $('.co-h', elRes); if (h) h.focus({ preventScroll: true });

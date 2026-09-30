@@ -62,3 +62,21 @@ test('número do pedido', () => {
   assert.equal(V.numeroPedido(new Date(2026, 8, 30), 0), 'DS-3009-0000');
   assert.match(V.numeroPedido(), /^DS-\d{4}-[0-9A-Z]{4}$/);
 });
+
+test('comprovante: dados pessoais mascarados', () => {
+  assert.equal(V.mascararTelefone('(55) 99201-0668'), '(55) 9••••-0668');
+  assert.equal(V.mascararTelefone('55 3332-1234'), '(55) ••••-1234');
+  assert.equal(V.mascararTelefone('123'), '');
+  assert.equal(V.mascararEmail('maria@exemplo.com.br'), 'ma•••@exemplo.com.br');
+  assert.equal(V.mascararEmail(''), '');
+});
+
+test('comprovante: código de verificação muda com qualquer alteração', () => {
+  const base = { numero: 'DS-3009-AB12', dataISO: '2026-09-30T15:00:00.000Z', status: 'pago', pagamento: 'pix', total: 174.98,
+    itens: [{ id: 'fita', qtd: 1, unit: 65 }, { id: 'massa', qtd: 2, unit: 54.99 }] };
+  const c1 = V.codigoVerificacao(V.conteudoComprovante(base));
+  assert.match(c1, /^[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}$/);
+  assert.equal(c1, V.codigoVerificacao(V.conteudoComprovante(base)), 'determinístico');
+  assert.notEqual(c1, V.codigoVerificacao(V.conteudoComprovante({ ...base, total: 175.98 })));
+  assert.notEqual(c1, V.codigoVerificacao(V.conteudoComprovante({ ...base, itens: [{ id: 'fita', qtd: 2, unit: 65 }, base.itens[1]] })));
+});

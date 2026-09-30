@@ -24,7 +24,7 @@ Proposta de site para a **Drysul — gesso e acabamento**. HTML, CSS e JavaScrip
 - **Preço, produto ou oferta:** edite `js/data.js`. `preco: null` mostra "Sob consulta".
 - **Foto real de produto:** coloque a imagem em `assets/img/` e preencha `foto: 'assets/img/nome.webp'` no produto. Sem foto, aparece o desenho técnico.
 - **Telefone, endereço, Instagram:** objeto `loja` em `js/data.js` (rodapé, contato e WhatsApp leem dali).
-- **Limite da compra pelo site:** `vendas.limiteOnline` em `js/data.js` (padrão R$ 500).
+- **Limite da compra pelo site:** `vendas.limiteOnline` em `js/data.js` (atual: R$ 1.000).
 
 ## Central de vendas
 

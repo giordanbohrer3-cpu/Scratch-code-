@@ -28,19 +28,14 @@
 .motion-on .hero__lead { animation: fade-up 800ms var(--ease) 320ms both; }
 .motion-on .hero__actions { animation: fade-up 800ms var(--ease) 440ms both; }
 .motion-on .hero__facts { animation: fade-up 800ms var(--ease) 560ms both; }
-.motion-on .hero__art { animation: clip-up 1100ms var(--ease) 180ms both; }
-.motion-on .build { animation: float 8s ease-in-out 1.8s infinite; }
-.motion-on .build .draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 1300ms var(--ease-io) 350ms forwards; }
-.motion-on .build__layer--back > * { animation: slide-in-up 900ms var(--ease) 800ms both; }
-.motion-on .build__layer--front > * { animation: slide-in-left 900ms var(--ease) 1000ms both; }
-.motion-on .build__tape { transform-origin: top; animation: grow-y 800ms var(--ease-io) 1350ms both; }
-.motion-on .build .lbl { animation: fade-up 600ms var(--ease) calc(1500ms + var(--i) * 110ms) both; }
-.motion-on .hero__caption { animation: fade-up 600ms var(--ease) 1900ms both; }
+@keyframes wall-in { from { opacity: 0; } to { opacity: 1; } }
+.motion-on .wall { animation: wall-in 700ms linear 100ms both, float 8s ease-in-out 2.2s infinite; }
+.motion-on .hero__caption { animation: fade-up 600ms var(--ease) 1600ms both; }
 .motion-on .scroll-cue span::after { animation: sweep 2.6s var(--ease-io) infinite; }
 .motion-on .sc-search .caret { animation: blink 1s steps(1) infinite; }
 
-/* Camadas da construção acompanham a rolagem (transform aplicado via JS) */
-.build__layer { will-change: transform; }
+/* Parede 3D: as camadas usam variáveis que o JS atualiza com a rolagem */
+.motion-on .wl--plate, .motion-on .wl--back, .motion-on .wl--tape, .motion-on .wall__rig { will-change: transform; }
 
 /* ---------- Faixa contínua ---------- */
 .motion-on .marquee__track { animation: marquee 38s linear infinite; }

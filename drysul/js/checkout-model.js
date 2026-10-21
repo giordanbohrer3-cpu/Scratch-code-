@@ -1,8 +1,8 @@
 /* Central de vendas — regras puras (sem DOM), testáveis no Node.
    Decide o canal do pedido:
-   - "online": só itens com preço, sem estimativa da calculadora, subtotal até o limite → compra pelo site
+   - "online": só itens com preço, sem quantidade vinda da calculadora, subtotal até o limite → compra pelo site
    - "whatsapp": tem cálculo de parede/forro, item sob consulta ou valor acima do limite → atendimento
-   Na versão final, o servidor refaz este cálculo com o catálogo dele: preço vindo do navegador não é confiável. */
+   O servidor da loja (worker/src/catalogo.js) refaz este cálculo com o mesmo catálogo: preço vindo do navegador não é confiável. */
 (function (root, factory) {
   var api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
@@ -27,10 +27,12 @@
     });
 
     var subtotal = totalC / 100;
-    if (!linhas.length && !pedido.estimativa) return { canal: 'vazio', motivos: [], subtotal: 0, linhas: [] };
+    // calculos: medidas que geraram itens na lista (versão atual); estimativa: bloco único das versões anteriores
+    var calculo = !!pedido.estimativa || !!(pedido.calculos && pedido.calculos.length);
+    if (!linhas.length && !calculo) return { canal: 'vazio', motivos: [], subtotal: 0, linhas: [] };
 
     var motivos = [];
-    if (pedido.estimativa) motivos.push('calculo');
+    if (calculo) motivos.push('calculo');
     if (consulta) motivos.push('consulta');
     if (subtotal > cfg.limiteOnline) motivos.push('limite');
     return { canal: motivos.length ? 'whatsapp' : 'online', motivos: motivos, subtotal: subtotal, linhas: linhas };
@@ -38,7 +40,7 @@
 
   function textoMotivo(m, limite, fmtBRL) {
     return {
-      calculo: 'Tem cálculo de parede, forro ou revestimento: a equipe converte a estimativa em embalagens.',
+      calculo: 'Tem quantidades da calculadora: a equipe confere as medidas, as quantidades e os preços.',
       consulta: 'Tem itens sob consulta: preço e disponibilidade são confirmados pela equipe.',
       limite: 'Pedido acima de ' + fmtBRL(limite) + ': atendimento para condições e entrega.'
     }[m];
@@ -80,8 +82,8 @@
     return m[1].slice(0, Math.min(2, m[1].length)) + '•••@' + m[2];
   }
 
-  // Código de verificação do comprovante: resumo do conteúdo (FNV-1a de 2 × 32 bits).
-  // Na versão final, o código vem assinado pelo servidor da loja (HMAC), e a loja confere no painel.
+  // Código de verificação do comprovante de PEDIDO (WhatsApp): resumo do conteúdo (FNV-1a de 2 × 32 bits).
+  // O comprovante de PAGAMENTO usa o código assinado pelo servidor (HMAC), conferido em /api/comprovantes/verificar.
   function codigoVerificacao(texto) {
     var s = String(texto), h1 = 0x811c9dc5, h2 = 0x01000193 ^ s.length;
     for (var i = 0; i < s.length; i++) {

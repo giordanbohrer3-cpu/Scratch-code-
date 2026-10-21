@@ -16,33 +16,44 @@
 @keyframes sweep { 0% { transform: translateY(-110%); } 60%, 100% { transform: translateY(260%); } }
 @keyframes marquee { to { transform: translateX(-50%); } }
 @keyframes breathe { from { transform: rotate(0deg) scale(1); } to { transform: rotate(1.6deg) scale(1.05); } }
-@keyframes sheet-in { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
-@keyframes pop-in { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes sheet-in { from { opacity: 0; transform: perspective(1200px) translateX(36px) rotateY(-12deg); } to { opacity: 1; transform: none; } }
+@keyframes pop-in { from { opacity: 0; transform: perspective(1200px) translateY(24px) rotateX(14deg) scale(.97); } to { opacity: 1; transform: none; } }
 @keyframes body-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
 @keyframes blink { 50% { opacity: 0; } }
 
 .motion-on .site-header { animation: fade-up 600ms var(--ease) both; }
-.motion-on .hero__title .line > span { animation: rise 1000ms var(--ease) both; }
-.motion-on .hero__title .line:nth-child(2) > span { animation-delay: 110ms; }
+/* o título do topo aparece na hora (é o maior elemento da primeira tela: animá-lo atrasava o carregamento percebido) */
 .motion-on .hero__eyebrow { animation: fade-up 700ms var(--ease) 60ms both; }
 .motion-on .hero__lead { animation: fade-up 800ms var(--ease) 320ms both; }
-.motion-on .hero__actions { animation: fade-up 800ms var(--ease) 440ms both; }
-.motion-on .hero__facts { animation: fade-up 800ms var(--ease) 560ms both; }
+.motion-on .atalho--hero { animation: fade-up 800ms var(--ease) 420ms both; }
+.motion-on .hero__cats, .motion-on .hero__selos { animation: fade-up 800ms var(--ease) 520ms both; }
+/* abertura (quem somos): o título já vem pronto (é o maior texto da primeira tela); o resto sobe em sequência */
+.motion-on .abertura__eyebrow { animation: fade-up 700ms var(--ease) 40ms both; }
+.motion-on .abertura__lead { animation: fade-up 800ms var(--ease) 160ms both; }
+.motion-on .abertura__status { animation: fade-up 800ms var(--ease) 260ms both; }
+.motion-on .abertura__acoes, .motion-on .abertura__contatos { animation: fade-up 800ms var(--ease) 360ms both; }
+@keyframes foto-entra { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: none; } }
+.motion-on .abertura__foto { animation: foto-entra 900ms var(--ease) 80ms both; }
+.motion-on .abertura__mapa { animation: fade-up 800ms var(--ease) 520ms both; }
+@keyframes seguir { 50% { transform: translateY(5px); } }
+.motion-on .abertura__seguir { animation: fade-up 800ms var(--ease) 700ms both; }
+.motion-on .abertura__seta { animation: seguir 1.6s var(--ease) 1.6s 4; }
 @keyframes wall-in { from { opacity: 0; } to { opacity: 1; } }
 .motion-on .wall { animation: wall-in 700ms linear 100ms both, float 8s ease-in-out 2.2s infinite; }
-.motion-on .hero__caption { animation: fade-up 600ms var(--ease) 1600ms both; }
-.motion-on .scroll-cue span::after { animation: sweep 2.6s var(--ease-io) infinite; }
 .motion-on .sc-search .caret { animation: blink 1s steps(1) infinite; }
 
 /* Parede 3D: as camadas usam variáveis que o JS atualiza com a rolagem */
 .motion-on .wl--plate, .motion-on .wl--back, .motion-on .wl--tape, .motion-on .wall__rig { will-change: transform; }
 
 /* ---------- Faixa contínua ---------- */
-.motion-on .marquee__track { animation: marquee 38s linear infinite; }
+/* a trilha tem 4 cópias e anda meia trilha (2 cópias) por volta: cobre telas de até ~2100 px sem buraco à direita */
+.motion-on .marquee__track { animation: marquee 76s linear infinite; }
+.motion-on .marquee--topo .marquee__track { animation-direction: reverse; }
 .motion-on .marquee:hover .marquee__track { animation-play-state: paused; }
+/* fora da tela, as animações contínuas param (o motion.js marca .anim-off) */
+.motion-on .wall.anim-off, .motion-on .marquee.anim-off .marquee__track, .motion-on .calc__ph-ill.anim-off .ill { animation-play-state: paused; }
 
 /* ---------- Padrões respirando ---------- */
-.motion-on .dest-pattern { animation: breathe 9s ease-in-out infinite alternate; }
 
 /* ---------- Entradas ao rolar ---------- */
 .motion-on [data-reveal] {
@@ -65,9 +76,15 @@
 .motion-on [data-reveal="line"]:not(.is-in) { opacity: 1; transform: scaleX(0); }
 
 /* Cartões entram como painéis encaixando */
-.motion-on .cat-card[data-reveal]:not(.is-in),
-.motion-on .dest-card[data-reveal]:not(.is-in),
 .motion-on .offer[data-reveal]:not(.is-in) { transform: translateY(40px) scale(.985); }
+/* Celular e tablet (toque): sem cortina sobre as fotos e com entradas curtas. A foto aparece na hora (a cortina
+   branca deixava um quadro vazio e a foto "caía" depois) e o texto assenta rápido, sem atrasar a leitura. */
+@media not all and (min-width: 1024px) and (hover: hover) and (pointer: fine) {
+  .motion-on [data-reveal] { transition-duration: 420ms, 420ms, 0ms; }
+  .motion-on [data-reveal]:not(.is-in), .motion-on .offer[data-reveal]:not(.is-in) { transform: translateY(14px); }
+  .motion-on [data-reveal="clip"]::after { content: none; }
+  .motion-on [data-reveal="clip"]:not(.is-in) img { scale: 1; }
+}
 
 /* Parallax — deslocamentos pequenos aplicados via JS */
 [data-parallax], [data-parallax-img], [data-drift] { will-change: transform; }
@@ -85,11 +102,23 @@
 
 /* Resultado da calculadora */
 .motion-on .res__list li { animation: fade-up 480ms var(--ease) both; animation-delay: calc(var(--i, 0) * 40ms); }
+/* o total entra depois da lista, subindo de leve em perspectiva */
+.motion-on .res__total { animation: pop-in 560ms var(--ease) 420ms both; }
+.motion-on .res__nota { animation: fade-up 480ms var(--ease) 560ms both; }
 
 /* Diálogos */
 .motion-on .sheet[open] { animation: sheet-in 380ms var(--ease) both; }
 .motion-on .sheet--center[open] { animation: pop-in 380ms var(--ease) both; }
 .motion-on .sheet[open]::backdrop { animation: fade-up 300ms linear both; }
+/* busca rápida: o painel desce de leve, os resultados entram em cascata e a linha laranja corre a cada busca */
+.motion-on .busca-dlg[open] { animation: busca-in 420ms var(--ease) both; }
+.motion-on .busca-dlg[open]::backdrop { animation: fade-up 300ms linear both; }
+.motion-on .bres { animation: bres-in 420ms var(--ease) both; animation-delay: calc(var(--i, 0) * 32ms); }
+.motion-on .busca__campo.is-buscando::after { animation: busca-linha 640ms var(--ease) both; }
+.motion-on .busca__vazio:not([hidden]), .motion-on .busca__sugestoes:not([hidden]) { animation: bres-in 420ms var(--ease) both; }
+@keyframes busca-in { from { opacity: 0; transform: translateY(-18px) scale(.97); } }
+@keyframes bres-in { from { opacity: 0; transform: translateY(10px); } }
+@keyframes busca-linha { 0% { transform: scaleX(0); opacity: 1; } 70% { transform: scaleX(1); opacity: 1; } 100% { transform: scaleX(1); opacity: 0; } }
 
 /* ---------- Pausado / movimento reduzido ---------- */
 .motion-paused *, .motion-paused *::before, .motion-paused *::after { animation: none !important; }
@@ -101,3 +130,136 @@
 }
 .motion-on .sheet--checkout[open] { animation: pop-in 380ms var(--ease) both; }
 .motion-on .co-step:not([hidden]) { animation: fade-up 360ms var(--ease) both; }
+
+/* ==========================================================================
+   3D na rolagem
+   Animações ligadas à rolagem (animation-timeline): rodam no compositor e seguem o dedo.
+   Só onde o navegador suporta (Chrome, Edge, Samsung Internet, Safari 26+); nos demais ficam as entradas acima.
+   O motion.js põe .s3d apenas nos blocos a até uma tela de distância: o navegador atualiza poucas linhas de
+   tempo por quadro em vez de todas. O quadro final é implícito: terminada a entrada, vale o transform do
+   próprio elemento (hover, inclinação pelo mouse).
+   ========================================================================== */
+@property --s3d-x { syntax: "<length>"; inherits: false; initial-value: 0px; }
+@property --s3d-y { syntax: "<length>"; inherits: false; initial-value: 56px; }
+@property --s3d-z { syntax: "<length>"; inherits: false; initial-value: -180px; }
+@property --s3d-rx { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@property --s3d-ry { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@property --s3d-k { syntax: "<number>"; inherits: false; initial-value: 0; }
+@property --g-ry { syntax: "<angle>"; inherits: false; initial-value: 16deg; }
+/* variáveis que só o próprio .wall__rig usa: não herdadas, então mudar o giro não recalcula a parede inteira */
+@property --rot { syntax: "<number>"; inherits: false; initial-value: 0; }
+@property --rot2 { syntax: "<number>"; inherits: false; initial-value: 0; }
+@property --rmx { syntax: "<number>"; inherits: false; initial-value: 0; }
+@property --rmy { syntax: "<number>"; inherits: false; initial-value: 0; }
+
+@supports (animation-timeline: view()) {
+  @keyframes s3d-in {
+    from {
+      opacity: 0;
+      transform: perspective(1200px) translate3d(var(--s3d-x), var(--s3d-y), var(--s3d-z)) rotateX(var(--s3d-rx)) rotateY(var(--s3d-ry));
+    }
+  }
+  @keyframes s3d-spin { from { opacity: 0; transform: perspective(600px) rotateY(-120deg) scale(.7); } }
+  @keyframes s3d-media { from { transform: perspective(800px) rotateY(-14deg) rotateX(8deg) scale(1.22); } }
+  @keyframes s3d-ribbon {
+    0% { transform: perspective(700px) rotateX(-38deg) scale(1.03); }
+    38%, 62% { transform: none; }
+    100% { transform: perspective(700px) rotateX(34deg) scale(1.03); }
+  }
+  @keyframes s3d-gallery {
+    0% { opacity: .55; transform: perspective(1400px) translateZ(-180px) rotateY(var(--g-ry)) rotateX(6deg); }
+    34%, 66% { opacity: 1; transform: none; }
+    100% { opacity: 1; transform: perspective(1400px) translateZ(-90px) rotateY(calc(var(--g-ry) * -.4)) rotateX(-3deg); }
+  }
+  @keyframes s3d-stage {
+    from { transform: perspective(1300px) rotateY(-14deg) rotateX(7deg); }
+    50% { transform: perspective(1300px) rotateY(0deg) rotateX(0deg); }
+    to { transform: perspective(1300px) rotateY(12deg) rotateX(-5deg); }
+  }
+  /* fundos que andam com a rolagem: padrão desliza, brilho atravessa a seção, formas flutuam */
+  @keyframes pat-drift { from { transform: translate3d(0, -7%, 0); } to { transform: translate3d(0, 7%, 0); } }
+  @keyframes glow-drift { from { transform: translate(-72%, -28%) scale(.85); } to { transform: translate(-28%, -72%) scale(1.15); } }
+  @keyframes flutua-0 { from { transform: translate3d(0, 90px, 0) rotate(-10deg); } to { transform: translate3d(40px, -90px, 0) rotate(8deg); } }
+  @keyframes flutua-1 { from { transform: translate3d(0, -60px, 0) rotate(12deg); } to { transform: translate3d(-50px, 120px, 0) rotate(-6deg); } }
+  @keyframes flutua-2 { from { transform: translate3d(-60px, 60px, 0) rotate(0deg); } to { transform: translate3d(60px, -70px, 0) rotate(22deg); } }
+
+  .motion-on .section { view-timeline-name: --sec; }
+  .motion-on .sec-on :is(.about__pattern, .contact__pattern) { animation: pat-drift linear both; animation-timeline: --sec; animation-range: cover 0% cover 100%; }
+  .motion-on :is(.section--navy, .section--deep).sec-on::after { animation: glow-drift linear both; animation-timeline: --sec; animation-range: cover 0% cover 100%; }
+  .motion-on .sec-on .floater { animation: flutua-0 linear both; animation-timeline: --sec; animation-range: cover 0% cover 100%; }
+  .motion-on .sec-on .floater--1 { animation-name: flutua-1; }
+  .motion-on .sec-on .floater--2 { animation-name: flutua-2; }
+
+  /* Entradas: os blocos sobem da profundidade e assentam com suavidade */
+  .motion-on :where(.prod-card, .offer, .calc__panel, .step,
+      .acc__item, .values li, .info-card, .footer__grid > *).s3d {
+    animation: s3d-in cubic-bezier(.16, 1, .3, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 100%; /* pronto assim que entra inteiro: nada fica apagado na metade de baixo da tela */
+  }
+  .motion-on .prod-card { --s3d-rx: 18deg; --s3d-ry: 6deg; --s3d-z: -110px; --s3d-y: 60px; }
+  .motion-on .prod-card:nth-child(even) { --s3d-ry: -6deg; }
+  .motion-on .offer { --s3d-ry: 18deg; --s3d-x: -30px; --s3d-z: -130px; --s3d-y: 40px; }
+  .motion-on .offer:nth-child(even) { --s3d-ry: -18deg; --s3d-x: 30px; }
+  .motion-on .calc__panel { --s3d-rx: 12deg; --s3d-y: 80px; --s3d-z: -180px; animation-range: entry 0% entry 80%; }
+  .motion-on .step { --s3d-ry: -14deg; --s3d-x: 40px; --s3d-z: -90px; --s3d-y: 24px; }
+  .motion-on .acc__item { --s3d-rx: 24deg; --s3d-y: 40px; --s3d-z: -60px; }
+  .motion-on .values li { --s3d-rx: -40deg; --s3d-y: 0px; --s3d-z: -20px; transform-origin: 50% 0; }
+  .motion-on .info-card { --s3d-rx: 20deg; --s3d-z: -100px; }
+  .motion-on .footer__grid > * { --s3d-rx: 16deg; --s3d-z: -80px; animation-range: entry 0% entry 100%; }
+
+  /* Fotos: giram em profundidade na entrada e ficam inteiras até sair (sem tombar nem apagar enquanto são vistas) */
+  .motion-on .about__media { --s3d-ry: -22deg; --s3d-x: 60px; --s3d-z: -180px; --s3d-y: 40px; }
+  .motion-on .about__media.s3d {
+    animation: s3d-in cubic-bezier(.16, 1, .3, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 100%;
+  }
+  .motion-on .ph.s3d { animation: s3d-gallery linear both; animation-timeline: view(); animation-range: cover 0% cover 100%; }
+  .motion-on .ph--b { --g-ry: -14deg; }
+  .motion-on .ph--c { --g-ry: -20deg; }
+  .motion-on .ph--d { --g-ry: 12deg; }
+  .motion-on .ph--e { --g-ry: -16deg; }
+
+  /* Dentro dos cartões: a foto assenta girando e os desenhos viram como moeda */
+  .motion-on :where(.prod-card, .offer).s3d { view-timeline-name: --card; }
+  .motion-on :where(.dest-card, .prod-card, .offer).s3d :is(.dest-card__media, .prod-card__media, .offer__media) > img {
+    animation: s3d-media cubic-bezier(.16, 1, .3, 1) both; animation-timeline: --card; animation-range: entry 0% entry 100%;
+  }
+  .motion-on :where(.dest-card, .prod-card).s3d :is(.dest-card__media, .prod-card__media) > .ill,
+  .motion-on .cat-card.s3d > .ill {
+    animation: s3d-spin cubic-bezier(.16, 1, .3, 1) both; animation-timeline: --card; animation-range: entry 10% entry 100%;
+  }
+
+  /* A faixa laranja passa torcida como fita */
+  .motion-on .marquee.s3d { animation: s3d-ribbon linear both; animation-timeline: view(); animation-range: cover 0% cover 100%; }
+
+  /* Como funciona: o palco gira acompanhando a seção inteira */
+  .motion-on .story__stage { animation: s3d-stage linear both; animation-timeline: --sec; animation-range: contain 0% contain 100%; }
+
+  /* Em grade, cada coluna entra um pouco depois da anterior */
+  @media (min-width: 720px) {
+    .motion-on :is(.cat-grid, .dest-grid, .prod-grid, .offer-grid, .contact__grid, .values) > :nth-child(n) {
+      animation-range: entry calc(var(--s3d-k) * 6%) entry calc(82% + var(--s3d-k) * 6%);
+    }
+    /* o rodapé termina a página: a faixa fica dentro da entrada para sempre chegar ao fim */
+    .motion-on .footer__grid > :nth-child(n) { animation-range: entry calc(var(--s3d-k) * 6%) entry calc(64% + var(--s3d-k) * 12%); }
+    .motion-on :is(.cat-grid, .prod-grid, .contact__grid, .footer__grid) > :nth-child(4n+2),
+    .motion-on :is(.dest-grid, .offer-grid, .values) > :nth-child(3n+2) { --s3d-k: 1; }
+    .motion-on :is(.cat-grid, .prod-grid, .contact__grid, .footer__grid) > :nth-child(4n+3),
+    .motion-on :is(.dest-grid, .offer-grid, .values) > :nth-child(3n) { --s3d-k: 2; }
+    .motion-on :is(.cat-grid, .prod-grid, .contact__grid, .footer__grid) > :nth-child(4n) { --s3d-k: 3; }
+  }
+
+  /* Quem anima pela rolagem (ou é escrito letra a letra) não usa a entrada por IntersectionObserver */
+  .motion-on :is(.sec-title, .contact__title, .cat-card, .dest-card, .offer, .calc__panel, .acc__item, .info-card, .values li)[data-reveal]:not(.is-in) {
+    opacity: 1; transform: none;
+  }
+}
+
+/* Rolagem suave (Lenis) no computador: o próprio Lenis anima, então a rolagem nativa suave sai de cena */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis:not(.lenis-autoToggle).lenis-stopped { overflow: clip; }
+.lenis [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-smooth iframe { pointer-events: none; }

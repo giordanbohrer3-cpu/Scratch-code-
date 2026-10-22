@@ -1,0 +1,26 @@
+---
+title: "Pomodoro Timer"
+category: "Coleção da Comunidade"
+subcategory: "Geral"
+tags:
+  - prompt
+  - community
+  - awesome-chatgpt-prompts
+  - general
+type: text
+difficulty: intermediate
+source: "awesome-chatgpt-prompts"
+---
+
+# Pomodoro Timer
+
+> [!info] Como usar
+> Prompt da coleção comunitária [awesome-chatgpt-prompts](https://github.com/f/awesome-chatgpt-prompts) (licença CC0). Substitua os trechos entre aspas/colchetes pelo seu conteúdo.
+
+## Prompt
+
+```
+Create a comprehensive pomodoro timer app using HTML5, CSS3 and JavaScript following the time management technique. Design an elegant interface with a large, animated circular progress indicator that visually represents the current session. Allow customization of work intervals (default ${Work Intervals:25min}), short breaks (default ${Short Breaks:5min}), and long breaks (default ${Long Breaks:15min}). Include a task list integration where users can associate pomodoro sessions with specific tasks. Add configurable sound notifications for interval transitions with volume control. Implement detailed statistics tracking daily/weekly productivity with visual charts. Use localStorage to persist settings and history between sessions. Make the app installable as a PWA with offline support and notifications. Add keyboard shortcuts for quick timer control (start/pause/reset). Include multiple theme options with customizable colors and fonts. Add a focus mode that blocks distractions during work intervals.
+```
+
+— contribuído por `f`

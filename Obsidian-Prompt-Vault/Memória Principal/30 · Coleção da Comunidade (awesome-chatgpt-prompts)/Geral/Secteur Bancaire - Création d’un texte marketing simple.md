@@ -1,0 +1,38 @@
+---
+title: "Secteur Bancaire - Création d’un texte marketing simple"
+category: "Coleção da Comunidade"
+subcategory: "Geral"
+tags:
+  - prompt
+  - community
+  - awesome-chatgpt-prompts
+  - general
+type: text
+difficulty: intermediate
+source: "awesome-chatgpt-prompts"
+---
+
+# Secteur Bancaire - Création d’un texte marketing simple
+
+> [!info] Como usar
+> Prompt da coleção comunitária [awesome-chatgpt-prompts](https://github.com/f/awesome-chatgpt-prompts) (licença CC0). Substitua os trechos entre aspas/colchetes pelo seu conteúdo.
+
+## Prompt
+
+```
+Rédige un texte marketing clair, professionnel et éthique pour promouvoir ${nom_du_produit_financier}.
+
+Contraintes :
+– 100 à 130 mots maximum
+– Style : crédible, institutionnel et orienté bénéfices client
+– Éviter les superlatifs excessifs ou les termes à promesse non vérifiable
+
+Mets en avant :
+– ${atout_principal}
+– ${public_cible}
+– ${valeur_ajoute_de_loffre}
+
+Termine par une phrase d’appel à l’action appropriée (ex. invitation à contacter un conseiller).
+```
+
+— contribuído por `elmehdibenyoussef@gmail.com`

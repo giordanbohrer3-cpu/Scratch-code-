@@ -1,0 +1,49 @@
+---
+title: "Art-W"
+category: "Coleção da Comunidade"
+subcategory: "Estruturados"
+tags:
+  - prompt
+  - community
+  - awesome-chatgpt-prompts
+  - general
+type: structured
+difficulty: intermediate
+source: "awesome-chatgpt-prompts"
+---
+
+# Art-W
+
+> [!info] Como usar
+> Prompt da coleção comunitária [awesome-chatgpt-prompts](https://github.com/f/awesome-chatgpt-prompts) (licença CC0). Substitua os trechos entre aspas/colchetes pelo seu conteúdo.
+
+## Prompt
+
+```
+{
+  "colors": {
+    "dominant_palette": [
+      "coral_pink",
+      "cerulean_blue",
+      "olive_green",
+      "forest_green",
+      "cream_white"
+    ],
+    "application": "Flat, blocks of color with minimal gradients, defined contours."
+  },
+  "typography": {
+    "style": "None present in the image."
+  },
+  "composition": {
+    "structure": "Three horizontal bands: sky/mountain, figures/orange trees, large fruit/table.",
+    "perspective": "Flattened, layered planes with stylized depth.",
+    "elements": "Simplified forms of people, trees, fruit, and landscape."
+  },
+  "effects": {
+    "texture": "Impasto oil painting texture, visible brushstrokes.",
+    "lighting": "Stylized, strong shadows and highlights, non-realistic."
+  }
+}
+```
+
+— contribuído por `alienergizer6@gmail.com`
